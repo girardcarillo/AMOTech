@@ -113,12 +113,37 @@
       <option name="ARM" value="true"/>
     </physicsList>
 
-    <!-- Hadron physics lists -->
-    <physicsList name="G4HadronElasticPhysicsHP"/>
-    <physicsList name="G4IonBinaryCascadePhysics"/>
-    <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
-    <physicsList name="G4EmExtraPhysics"/>
+    <!-- <!-\- Hadron physics lists -\-> -->
+    <!-- <physicsList name="G4HadronElasticPhysicsHP"/> -->
+    <!-- <physicsList name="G4IonBinaryCascadePhysics"/> -->
+    <!-- <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/> -->
+    <!-- <physicsList name="G4EmExtraPhysics"/> -->
 
+    <!-- SoLid Physics list -->
+    <physicsList name="HadronElasticProcess"/>
+    <physicsList name="ChipsNeutronElasticXS"/>
+    <physicsList name="NeutronHPElasticData"/>
+    <physicsList name="NeutronHPThermalScatteringData"/>
+
+    <physicsList name="NeutronHPElastic"/>
+    <physicsList name="NeutronHPThermalScattering"/>
+    <physicsList name="ChipsElasticModel"/>
+    <physicsList name="NeutronInelasticProcess"/>
+    <physicsList name="NeutronHPInelasticData"/>
+    <physicsList name="NeutronInelasticXS"/>
+    <physicsList name="NeutronHPInelastic"/>
+    <physicsList name="CascadeInterface"/>
+
+    <physicsList name="HadronCaptureProcess"/>
+    <physicsList name="NeutronHPCaptureData"/>
+    <physicsList name="NeutronCaptureXS"/>
+    <physicsList name="NeutronHPCapture"/>
+    <physicsList name="NeutronRadCapture"/>
+
+    <physicsList name="HadronFissionProcess"/>
+    <physicsList name="NeutronHPFissionData"/>
+    <physicsList name="NeutronHPFission"/>
+    
   </TRestGeant4PhysicsLists>
 
   <!--  -->
