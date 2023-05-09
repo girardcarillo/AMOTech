@@ -199,7 +199,7 @@
     </volume>
 
     <volume name="elecVolume">
-      <materialref ref="G4_Fe"/>
+      <materialref ref="G4_AIR"/>
       <solidref ref="TotalElecSolid"/>
     </volume>
 
@@ -237,7 +237,7 @@
     </volume>
     
     <volume name="pmtVolume">
-      <materialref ref="G4_GLASS_PLATE"/>
+      <materialref ref="G4_Galactic"/>
       <solidref ref="pmtSolid"/>
     </volume>
 
