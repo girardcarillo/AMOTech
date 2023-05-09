@@ -1,0 +1,103 @@
+<!-- PMTs -->
+<tube aunit="degree" lunit="mm" name="pmtTubeInner" rmin="0" rmax="(pmtDiam-pmtThickness*2)/2" deltaphi="360" z="pmtZSize" />
+
+<!-- pmt assembly -->
+
+<!--  pmt right -->
+
+<!-- in a raw -->
+
+<union name="pmtInnerRight1">
+  <first ref="pmtTubeInner"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight1" unit="mm" x="pmtDiam" y="0" z="0"/> 
+</union>
+
+<union name="pmtInnerRight2">
+  <first ref="pmtInnerRight1"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight2" unit="mm" x="pmtDiam*2" y="0" z="0"/>
+</union>
+
+<union name="pmtInnerRight3">
+  <first ref="pmtInnerRight2"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight3" unit="mm" x="pmtDiam*3" y="0" z="0"/>
+</union>
+
+<union name="pmtInnerRight4">
+  <first ref="pmtInnerRight3"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight4" unit="mm" x="pmtDiam*4" y="0" z="0"/>
+</union>
+
+<union name="pmtInnerRight5">
+  <first ref="pmtInnerRight4"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight5" unit="mm" x="pmtDiam*5" y="0" z="0"/>
+</union>
+
+<union name="pmtInnerRight6">
+  <first ref="pmtInnerRight5"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight6" unit="mm" x="pmtDiam*6" y="0" z="0"/>
+</union>
+
+<union name="pmtInnerRight7">
+  <first ref="pmtInnerRight6"/>
+  <second ref="pmtTubeInner"/>
+  <position name="PositionPmtInnerRight7" unit="mm" x="pmtDiam*7" y="0" z="0"/>
+</union>
+
+<!-- In a column -->
+
+<union name="pmtInnerRight8">
+  <first ref="pmtInnerRight7"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight8" unit="mm" x="0" y="pmtDiam" z="0"/>
+</union>
+
+<union name="pmtInnerRight9">
+  <first ref="pmtInnerRight8"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight9" unit="mm" x="0" y="pmtDiam*2" z="0"/>
+</union>
+
+<union name="pmtInnerRight10">
+  <first ref="pmtInnerRight9"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight10" unit="mm" x="0" y="pmtDiam*3" z="0"/>
+</union>
+
+<union name="pmtInnerRight11">
+  <first ref="pmtInnerRight10"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight11" unit="mm" x="0" y="pmtDiam*4" z="0"/>
+</union>
+
+<union name="pmtInnerRight12">
+  <first ref="pmtInnerRight11"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight12" unit="mm" x="0" y="pmtDiam*5" z="0"/>
+</union>
+
+<union name="pmtInnerRight13">
+  <first ref="pmtInnerRight12"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight13" unit="mm" x="0" y="pmtDiam*6" z="0"/>
+</union>
+
+<union name="pmtInnerRight14">
+  <first ref="pmtInnerRight13"/>
+  <second ref="pmtInnerRight7"/>
+  <position name="PositionPmtInnerRight14" unit="mm" x="0" y="pmtDiam*7" z="0"/>
+</union>
+
+<!--  pmt left -->
+
+<union name="pmtInnerSolid">
+  <first ref="pmtInnerRight14"/>
+  <second ref="pmtInnerRight14"/>
+  <position name="PositionPmtInnerRight15" unit="mm" x="0" y="0" z="2*pmtLeftZ"/>
+</union>
+

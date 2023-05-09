@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE gdml [
-<!ENTITY PMT SYSTEM "DC_PMT.gdml">
+<!ENTITY PMT_Inner SYSTEM "DC_PMT_Inner.gdml">
+<!ENTITY PMT_Outer SYSTEM "DC_PMT_Outer.gdml">
 <!ENTITY ArmorFibersCore SYSTEM "Armor_fibersCore.gdml">
 <!ENTITY ArmorFibersCladding SYSTEM "Armor_fibersCladding.gdml">
 <!ENTITY OuterDetector SYSTEM "OuterDetector.gdml">
@@ -41,6 +42,7 @@
     <!-- PMTs -->
     <constant name="pmtZSize" unit="mm" value="369.0"/> <!--fixe-->
     <constant name="pmtDiam" unit="mm" value="332.0"/>	<!--fixe-->
+    <constant name="pmtThickness" unit="mm" value="2.0"/>
 
     <!-- Tank -->    
     <constant name="tankThickness" unit="mm" value="10.0"/> <!--?material?-->
@@ -132,7 +134,8 @@
 
     &InnerDetector;
     &OuterDetector;
-    &PMT;
+    &PMT_Inner;
+    &PMT_Outer;
     &ArmorFibersCore;
     &ArmorFibersCladding;
     
@@ -143,12 +146,12 @@
       <first ref="fiberCoreSolid"/>
       <second ref="fiberCladdingSolid"/>
     </union>
-    
+        
     <!-- Union PMT Fiber -->
     <union name="pmtFiberSolid">
-      <first ref="pmtSolid"/>
-      <second ref="fiberSolid"/>
-      <position name="PositionOuter1" x="pmtDiam/2" y="pmtDiam/2" z="pmtLeftZ"/>
+      <first ref="pmtOuterSolid"/>
+      <second ref="fiberCladdingSolid"/>
+      <position name="PositionOuter1" unit="mm" x="pmtDiam/2" y="pmtDiam/2" z="pmtLeftZ"/>
     </union>
 
     <!-- <solid> definition of the liquid scintillator inside the Armor -->
@@ -163,19 +166,21 @@
     </subtraction>
     <!--  -->
     <!--  -->
-    
-        
-    <!-- <solid> definition of the liquid scintillator inside the Armor -->
-    <subtraction name="dummySolid">
-      <first ref="MainVesselSolidInside"/>
-      <second ref="tankTubeSolid"/>
-    </subtraction>
-    <subtraction name="lsArmorSolid">
-      <first ref="dummySolid"/>
-      <second ref="pmtSolid"/>
-      <positionref ref="pmtRightPosition"/> <!--Position between inner and outer detector. This shift comes from the way we define the solids-->
-    </subtraction>
 
+    <!-- A decommenter quand on retire les fibres -->
+    <!-- <!-\- <solid> definition of the liquid scintillator inside the Armor -\-> -->
+    <!-- <subtraction name="dummySolid"> -->
+    <!--   <first ref="MainVesselSolidInside"/> -->
+    <!--   <second ref="tankTubeSolid"/> -->
+    <!-- </subtraction> -->
+    <!-- <subtraction name="lsArmorSolid"> -->
+    <!--   <first ref="dummySolid"/> -->
+    <!--   <second ref="pmtOuterSolid"/> -->
+    <!--   <positionref ref="pmtRightPosition"/> <!-\-Position between inner and outer detector. This shift comes from the way we define the solids-\-> -->
+    <!-- </subtraction> -->
+    <!--  -->
+    <!--  -->
+    
   </solids>
   
   <structure>
@@ -208,7 +213,7 @@
 
       <physvol name="lsAMT">
 	<volumeref ref="lsAMTVolume"/>
-	<position name="lsAMTPosition" x="0" y="0" z="0"/>
+	<position name="lsAMTPosition" unit="mm" x="0" y="0" z="0"/>
       </physvol>
       
       <physvol name="tank">
@@ -236,9 +241,14 @@
       <solidref ref="MainVesselFillSolid"/>
     </volume>
     
-    <volume name="pmtVolume">
+    <volume name="pmtInnerVolume">
       <materialref ref="G4_Galactic"/>
-      <solidref ref="pmtSolid"/>
+      <solidref ref="pmtInnerSolid"/>
+    </volume>
+
+    <volume name="pmtOuterVolume">
+      <materialref ref="G4_Pyrex_Glass"/>
+      <solidref ref="pmtOuterSolid"/>
     </volume>
 
     <!-- a decommenter pour remettre fibres -->
@@ -269,8 +279,13 @@
 	<positionref ref="armorPosition"/>
       </physvol>
 
-      <physvol name="pmt">
-	<volumeref ref="pmtVolume"/>
+      <physvol name="pmtInner">
+	<volumeref ref="pmtInnerVolume"/>
+	<positionref ref="pmtRightPosition"/>
+      </physvol>
+
+      <physvol name="pmtOuter">
+	<volumeref ref="pmtOuterVolume"/>
 	<positionref ref="pmtRightPosition"/>
       </physvol>
 
