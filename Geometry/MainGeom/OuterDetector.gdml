@@ -1,0 +1,20 @@
+<!-- Thermalisation layer -->
+<box name="ThermalSolid" x="thermalXSize" y="thermalYSize" z="thermalZSize" lunit="mm"/>
+
+<!-- Main container -->
+<box name="MainVesselSolid" x="armorXSize" y="armorYSize" z="armorZSize" lunit="mm"/>
+
+<!-- Liquid Scintillator inside Armor -->
+<box name="MainVesselSolidInside" x="vesselXSize" y="vesselYSize" z="vesselZSize" lunit="mm"/>
+
+<!-- Thermalisation layer filling -->
+<subtraction name="ThermalFillSolid">
+  <first ref="ThermalSolid"/>
+  <second ref="MainVesselSolid"/>
+</subtraction>
+
+<!-- Main container filling -->
+<subtraction name="MainVesselFillSolid">
+  <first ref="MainVesselSolid"/>
+  <second ref="MainVesselSolidInside"/>
+</subtraction>

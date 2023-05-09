@@ -1,0 +1,5 @@
+event 1594
+Position (nan, nan, nan) mm
+Energy = 378.873
+Position (-49.2399, 1351.61, 820.135) mm
+Energy = 0

@@ -1,0 +1,46 @@
+<materials>
+  <!-- LAB -->
+  <material name="MY_LAB" state="liquid">
+    <D value="0.859" unit="g/cm3" />
+    <!-- <property name="RINDEX" ref="RINDEX"/> -->
+    <fraction n="0.87924" ref="C" />
+    <fraction n="0.1201" ref="H" />
+    <fraction n="0.00034" ref="O" />
+    <fraction n="0.00027" ref="N" />
+    <fraction n="0.00005" ref="S" />
+  </material>
+  
+  <!-- PMMA Kuraray Y11 fiber cladding  -->
+  <material name="MY_PMMA_Cladding" state="solid">
+    <D unit="g/cm3" value="1.19"/>
+    <fraction n="0.336" ref="C"/>
+    <fraction n="0.533" ref="H"/>
+    <fraction n="0.131" ref="O"/>
+  </material>
+  
+  <!-- Polystylene Kuraray Y11 fiber core  -->
+  <material name="MY_POLYSTYLENE" state="solid">
+    <D unit="g/cm3" value="1.05"/>
+    <fraction n="0.5" ref="C"/>
+    <fraction n="0.5" ref="H"/>
+    
+  </material>
+  
+  <!-- Borated water  -->
+  <material name="MY_BORATED_WATER" state="liquid">
+    <D unit="g/cm3" value="1.0"/>
+    <fraction n="0.03" ref="B"/> <!--3% B-->
+    <fraction n="0.11089400" ref="H"/>
+    <fraction n="0.85910600" ref="O"/>
+  </material>
+  
+  <!-- <!-\- Tests PVC  -\-> -->
+  <!-- <material name="MY_PVC" state="solid"> -->
+  <!--   <D unit="g/cm3" value="1.3"/> -->
+  <!--   <fraction n="0.04838" ref="H"/> -->
+  <!--   <fraction n="0.95162000" ref="C"/> -->
+  <!--   <!-\- <fraction n="0.38436" ref="C"/> -\-> -->
+  <!--   <!-\- <fraction n="0.56726" ref="Cl"/> -\-> -->
+  <!-- </material> -->
+
+</materials>

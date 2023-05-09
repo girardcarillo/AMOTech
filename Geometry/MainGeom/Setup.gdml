@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE gdml [
+<!ENTITY PMT SYSTEM "DC_PMT.gdml">
+<!ENTITY ArmorFibersCore SYSTEM "Armor_fibersCore.gdml">
+<!ENTITY ArmorFibersCladding SYSTEM "Armor_fibersCladding.gdml">
+<!ENTITY OuterDetector SYSTEM "OuterDetector.gdml">
+<!ENTITY InnerDetector SYSTEM "InnerDetector.gdml">
+<!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/materials.xml">
+<!ENTITY MyMaterials SYSTEM "../../Materials/MyMaterials.rml">
+]>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+  <!-- Numerical definitions -->
+
+  <define>
+    <variable name="world_size" unit="mm" value="10000" />
+    
+    <!-- Constants -->
+
+    <!-- Constants from design input -->
+    
+    <!-- Main Vessel dimensions -->
+    <constant name="vesselXSize" unit="mm" value="2800.0"/> <!--to update-->
+    <constant name="vesselZSize" unit="mm" value="6400.0"/>
+
+    <!-- Armor dimensions -->
+    <constant name="armorThickness" unit="mm" value="200.0"/> <!--205-->
+
+    <!-- Thermalisation layer dimensions -->
+    <constant name="thermalThickness" unit="mm" value="200.0"/> <!--?thermal studies?-->
+
+    <!-- Z Distance between electronics and PMTs -->
+    <constant name="tankTOpmt" unit="mm" value="500.0"/> <!--fixe-->
+    
+    <!-- X,Y Distance between tank and main vessel -->
+    <constant name="tankTOvessel" unit="mm" value="620.0"/> <!--a changer pour 500 fixe-->
+    
+    <!-- LSAMT -->
+    <constant name="lsAMTZSize" unit="mm" value="3500.0"/> <!--?simus?-->
+    <constant name="lsAMTDiam" unit="mm" value="1800.0"/> <!--fixe-->
+    
+    <!-- PMTs -->
+    <constant name="pmtZSize" unit="mm" value="369.0"/> <!--fixe-->
+    <constant name="pmtDiam" unit="mm" value="332.0"/>	<!--fixe-->
+
+    <!-- Tank -->    
+    <constant name="tankThickness" unit="mm" value="10.0"/> <!--?material?-->
+
+    <!-- Fibers -->
+    <constant name="fiberDiam" unit="mm" value="2.0"/> <!--fixe-->
+
+    
+    <!-- Constants derived from design input -->
+
+    <!-- Main Vessel dimensions -->
+    <constant name="vesselYSize" unit="mm" value="vesselXSize"/> <!--because it should be a square section. to modify if it changes-->
+    
+    <!-- Armor dimensions -->
+    <constant name="armorXSize" unit="mm" value="vesselXSize+2*armorThickness"/>
+    <constant name="armorYSize" unit="mm" value="vesselYSize+2*armorThickness"/>
+    <constant name="armorZSize" unit="mm" value="vesselZSize+2*armorThickness"/>
+    
+    <!-- Thermalisation layer dimensions -->
+    <constant name="thermalXSize" unit="mm" value="armorXSize+2*thermalThickness"/>
+    <constant name="thermalYSize" unit="mm" value="armorYSize+2*thermalThickness"/>
+    <constant name="thermalZSize" unit="mm" value="armorZSize+2*thermalThickness"/>
+
+    <!-- that was with the origin of the PMTs on the bottom right of the vessel, but asymetric  -->
+    <!-- <!-\- Define new (x,y,z) origin -\-> -->
+    <!-- <constant name="coordXRightVessel" unit="mm" value="-vesselXSize/2"/> -->
+    <!-- <constant name="coordYRightVessel" unit="mm" value="-vesselYSize/2"/> -->
+    <!-- <constant name="coordZRightVessel" unit="mm" value="vesselZSize/2"/> -->
+
+    <!-- Define new (x,y,z) origin -->
+    <!-- au final ces coordonnees seront donnees par le design, donc en faire un parametre -->
+    <constant name="coordXRightVessel" unit="mm" value="-4*pmtDiam"/> <!--au lieu de 4 mettre un parametre avec le nombre de PMs?-->
+    <constant name="coordYRightVessel" unit="mm" value="-4*pmtDiam"/>
+    <constant name="coordZRightVessel" unit="mm" value="vesselZSize/2"/>
+
+    <!-- PMTs -->
+    <constant name="pmtRightZ" unit="mm" value="coordZRightVessel-pmtZSize/2"/>
+    <constant name="pmtLeftZ" unit="mm" value="-(coordZRightVessel-pmtZSize/2)"/>
+
+    <!-- Tank -->
+    <constant name="tankZSize" unit="mm" value="vesselZSize-pmtZSize*2-tankTOpmt*2+tankThickness*2"/> 
+    <constant name="tankDiam" unit="mm" value="lsAMTDiam+tankThickness*2"/> 
+    
+    <!-- Electronics -->
+    <constant name="elecZSize" unit="mm" value="(tankZSize-lsAMTZSize-tankThickness*2)/2"/>
+    <constant name="elecRightZ" unit="mm" value="lsAMTZSize/2+elecZSize/2"/>
+    <constant name="elecLeftZ" unit="mm" value="-(lsAMTZSize/2+elecZSize/2)"/>
+
+    <!-- Fibers -->
+    <!-- to update with double cladding -->
+    <constant name="fiberCladdingThickness" unit="mm" value="0.02*fiberDiam"/>
+    <constant name="fiberCoreDiam" unit="mm" value="fiberDiam-fiberCladdingThickness"/>
+
+    <!-- <!-\- Positions -\-> -->
+    
+    <!-- Electronics -->
+    <position name="elecRightPosition" unit="mm" x="0" y="0" z="elecRightZ"/>
+    <position name="elecLeftPosition" unit="mm" x="0" y="0" z="elecLeftZ"/>
+    
+    <!-- PMTs Right -->
+    <position name="pmtRightPosition" unit="mm" x="coordXRightVessel+pmtDiam/2" y="coordYRightVessel+pmtDiam/2" z="pmtRightZ"/>
+
+    <!-- PMTs Left -->
+    <position name="pmtLeftPosition" unit="mm" x="coordXRightVessel+pmtDiam/2" y="coordYRightVessel+pmtDiam/2" z="-pmtRightZ"/>
+    
+    <!-- Fibers X -->
+    <position name="fiberPosition11" unit="mm" x="coordXRightVessel+pmtDiam" y="coordYRightVessel+pmtDiam" z="0"/>
+    <position name="fiberPosition12" unit="mm" x="coordXRightVessel+pmtDiam*2" y="coordYRightVessel+pmtDiam" z="0"/>
+    
+    <position name="vesselPosition" unit="mm" x="0" y="0" z="0"/>
+    <position name="armorPosition" unit="mm" x="0" y="0" z="0"/>
+    <position name="tankPosition" unit="mm" x="0" y="0" z="0"/>
+
+    <!-- Rotations -->
+    <rotation unit="degree" name="HorizontalRotation" x="-90" y="0" z="0"/>
+
+    <!-- For the refractive index -->
+    <!-- <matrix name="RINDEX" coldim="2" values="3*eV 10" /> -->
+    
+  </define>
+
+  &materials;
+  
+  &MyMaterials;
+
+  <solids>
+
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+
+    &InnerDetector;
+    &OuterDetector;
+    &PMT;
+    &ArmorFibersCore;
+    &ArmorFibersCladding;
+    
+
+    <!-- a decommenter pour remettre les fibres -->
+    <!-- Union fibers Core/Cladding -->
+    <union name="fiberSolid">
+      <first ref="fiberCoreSolid"/>
+      <second ref="fiberCladdingSolid"/>
+    </union>
+    
+    <!-- Union PMT Fiber -->
+    <union name="pmtFiberSolid">
+      <first ref="pmtSolid"/>
+      <second ref="fiberSolid"/>
+      <position name="PositionOuter1" x="pmtDiam/2" y="pmtDiam/2" z="pmtLeftZ"/>
+    </union>
+
+    <!-- <solid> definition of the liquid scintillator inside the Armor -->
+    <subtraction name="dummySolid">
+      <first ref="MainVesselSolidInside"/>
+      <second ref="tankTubeSolid"/>
+    </subtraction>
+    <subtraction name="lsArmorSolid">
+      <first ref="dummySolid"/>
+      <second ref="pmtFiberSolid"/>
+      <positionref ref="pmtRightPosition"/> <!--Position between inner and outer detector. This shift comes from the way we define the solids-->
+    </subtraction>
+    <!--  -->
+    <!--  -->
+    
+        
+    <!-- <solid> definition of the liquid scintillator inside the Armor -->
+    <subtraction name="dummySolid">
+      <first ref="MainVesselSolidInside"/>
+      <second ref="tankTubeSolid"/>
+    </subtraction>
+    <subtraction name="lsArmorSolid">
+      <first ref="dummySolid"/>
+      <second ref="pmtSolid"/>
+      <positionref ref="pmtRightPosition"/> <!--Position between inner and outer detector. This shift comes from the way we define the solids-->
+    </subtraction>
+
+  </solids>
+  
+  <structure>
+
+    <!-- Fill space between ID and OD with ls -->
+    <volume name="lsArmorVolume">
+      <solidref ref="lsArmorSolid"/>
+      <materialref ref="MY_LAB"/>
+    </volume>
+        
+    <!-- Inner detector Assembly -->
+    
+    <volume name="lsAMTVolume">
+      <materialref ref="MY_LAB"/>
+      <solidref ref="lsAMTSolid"/>
+    </volume>
+
+    <volume name="tankVolume">
+      <materialref ref="G4_PLEXIGLASS"/>
+      <solidref ref="tankSolid"/>
+    </volume>
+
+    <volume name="elecVolume">
+      <materialref ref="G4_Fe"/>
+      <solidref ref="TotalElecSolid"/>
+    </volume>
+
+    
+    <assembly name="InnerDetectorAssembly">
+
+      <physvol name="lsAMT">
+	<volumeref ref="lsAMTVolume"/>
+	<position name="lsAMTPosition" x="0" y="0" z="0"/>
+      </physvol>
+      
+      <physvol name="tank">
+	<volumeref ref="tankVolume"/>
+	<positionref ref="tankPosition"/>
+      </physvol>
+
+      <physvol name="elec">
+	<volumeref ref="elecVolume"/>
+	<positionref ref="elecRightPosition"/>
+      </physvol>
+      
+    </assembly>
+
+
+    <!-- Outer detector Assembly -->
+
+    <volume name="ThermalFillVolume">
+      <materialref ref="G4_POLYETHYLENE"/>
+      <solidref ref="ThermalFillSolid"/>
+    </volume>
+    
+    <volume name="MainVesselFillVolume">
+      <materialref ref="MY_BORATED_WATER"/>
+      <solidref ref="MainVesselFillSolid"/>
+    </volume>
+    
+    <volume name="pmtVolume">
+      <materialref ref="G4_GLASS_PLATE"/>
+      <solidref ref="pmtSolid"/>
+    </volume>
+
+    <!-- a decommenter pour remettre fibres -->
+
+    <volume name="fiberCoreVolume">
+      <materialref ref="MY_POLYSTYLENE"/>
+      <solidref ref="fiberCoreSolid"/>
+    </volume>
+
+    <volume name="fiberCladdingVolume">
+      <materialref ref="MY_PMMA_Cladding"/>
+      <solidref ref="fiberCladdingSolid"/>
+    </volume>
+
+    <!--  -->
+    <!--  -->
+    
+   
+    <assembly name="OuterDetectorAssembly">
+
+      <!-- commented on 17/03/2023 to better study interaction of neutrons in the borated water -->
+      <!-- <physvol name="ThermalFill"> -->
+      <!-- 	<volumeref ref="ThermalFillVolume"/> -->
+      <!-- </physvol> -->
+      
+      <physvol name="MainVesselFill">
+	<volumeref ref="MainVesselFillVolume"/>
+	<positionref ref="armorPosition"/>
+      </physvol>
+
+      <physvol name="pmt">
+	<volumeref ref="pmtVolume"/>
+	<positionref ref="pmtRightPosition"/>
+      </physvol>
+
+      <physvol name="fiberCore">
+	<volumeref ref="fiberCoreVolume"/>
+	<positionref ref="fiberPosition11"/>
+      </physvol>
+
+      <physvol name="fiberCladding">
+	<volumeref ref="fiberCladdingVolume"/>
+	<positionref ref="fiberPosition11"/>
+      </physvol>
+      
+    </assembly>
+    
+    <volume name="World">
+      <materialref ref="G4_AIR"/>
+      <solidref ref="WorldSolid"/>
+
+      <physvol name="lsArmor">
+	<volumeref ref="lsArmorVolume"/>
+	<rotationref ref="HorizontalRotation" />
+      </physvol>
+      
+      <physvol name="ID">
+	<volumeref ref="InnerDetectorAssembly"/>
+	<rotationref ref="HorizontalRotation" />
+      </physvol>
+      
+      <physvol name="OD">
+	<volumeref ref="OuterDetectorAssembly"/>
+	<rotationref ref="HorizontalRotation" />
+      </physvol>
+ 
+    </volume>
+
+  </structure>
+  
+  <setup name="Default" version="1.0">
+    <world ref="World"/>
+  </setup>
+
+</gdml>
+
+

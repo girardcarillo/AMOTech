@@ -1,0 +1,75 @@
+<!-- Fibers -->
+<tube aunit="degree" lunit="mm" name="fiberCladdingTube" rmin="fiberCoreDiam/2" rmax="fiberDiam/2" deltaphi="360" z="vesselZSize" />
+
+
+
+<!-- fiber cladding (or full solid?) assembly -->
+
+<!-- bottom -->
+
+<union name="fiberCladding1">
+  <first ref="fiberCladdingTube"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding1" unit="mm" x="pmtDiam" y="0" z="0"/>
+</union>
+
+<union name="fiberCladding2">
+  <first ref="fiberCladding1"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding2" unit="mm" x="pmtDiam*2" y="0" z="0"/>
+</union>
+
+<union name="fiberCladding3">
+  <first ref="fiberCladding2"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding3" unit="mm" x="pmtDiam*3" y="0" z="0"/>
+</union>
+
+<union name="fiberCladding4">
+  <first ref="fiberCladding3"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding4" unit="mm" x="pmtDiam*4" y="0" z="0"/>
+</union>
+
+<union name="fiberCladding5">
+  <first ref="fiberCladding4"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding5" unit="mm" x="pmtDiam*5" y="0" z="0"/>
+</union>
+
+<union name="fiberCladding6">
+  <first ref="fiberCladding5"/>
+  <second ref="fiberCladdingTube"/>
+  <position name="PositionFiberCladding6" unit="mm" x="pmtDiam*6" y="0" z="0"/>
+</union>
+
+<!-- top -->
+
+<union name="fiberCladding7">
+  <first ref="fiberCladding6"/>
+  <second ref="fiberCladding6"/>
+  <position name="PositionFiberCladding7" unit="mm" x="0" y="pmtDiam*6" z="0"/>
+</union>
+
+
+<!-- Right side -->
+
+
+<union name="fiberCladding8">
+  <first ref="fiberCladding7"/>
+  <second ref="fiberCladding4"/>
+  <position name="PositionFiberCladding8" unit="mm" x="pmtDiam*6" y="pmtDiam" z="0"/>
+  <rotation name="RotateZ" z="90" unit="deg"/>
+</union>
+
+
+<!-- Left side -->
+
+
+<union name="fiberCladdingSolid">
+  <first ref="fiberCladding8"/>
+  <second ref="fiberCladding4"/>
+  <position name="PositionFiberCladding9" unit="mm" x="0" y="pmtDiam" z="0"/>
+  <rotation name="RotateZ" z="90" unit="deg"/>
+</union>
+

@@ -1,0 +1,22 @@
+<!-- Acrylic tank tube -->
+<tube aunit="degree" lunit="mm" name="tankTubeSolid" rmin="0" rmax="tankDiam/2" deltaphi="360" z="tankZSize" />
+<tube aunit="degree" lunit="mm" name="tankTubeSolidInside" rmin="0" rmax="(tankDiam-tankThickness*2)/2" deltaphi="360" z="tankZSize-tankThickness*2" />
+
+<!-- Liquid scintillator inside AMOTech -->
+<tube aunit="degree" lunit="mm" name="lsAMTSolid" rmin="0" rmax="lsAMTDiam/2" deltaphi="360" z="lsAMTZSize" />
+
+<!-- electronic -->
+<tube aunit="degree" lunit="mm" name="elecSolid" rmin="0" rmax="lsAMTDiam/2" deltaphi="360" z="elecZSize" /> 
+
+<!-- Acrylic tank -->
+<subtraction name="tankSolid">
+  <first ref="tankTubeSolid"/>
+  <second ref="tankTubeSolidInside"/>
+</subtraction>
+
+<!-- Electronics -->
+<union name="TotalElecSolid">
+  <first ref="elecSolid"/>
+  <second ref="elecSolid"/>
+  <position name="PositionInner1" unit="mm" x="0" y="0" z="-elecRightZ*2"/> <!--a changer par position elecRightPosition--> 
+</union>

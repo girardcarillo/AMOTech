@@ -1,0 +1,74 @@
+<!-- Fibers -->
+<tube aunit="degree" lunit="mm" name="fiberCoreSolid" rmin="0" rmax="fiberCoreDiam/2" deltaphi="360" z="vesselZSize" />
+
+
+<!-- fiber core assembly -->
+
+<!-- bottom -->
+
+<union name="fiberCore1">
+  <first ref="fiberCoreSolid"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber1" unit="mm" x="pmtDiam" y="0" z="0"/>
+</union>
+
+<union name="fiberCore2">
+  <first ref="fiberCore1"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber2" unit="mm" x="pmtDiam*2" y="0" z="0"/>
+</union>
+
+<union name="fiberCore3">
+  <first ref="fiberCore2"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber3" unit="mm" x="pmtDiam*3" y="0" z="0"/>
+</union>
+
+<union name="fiberCore4">
+  <first ref="fiberCore3"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber4" unit="mm" x="pmtDiam*4" y="0" z="0"/>
+</union>
+
+<union name="fiberCore5">
+  <first ref="fiberCore4"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber5" unit="mm" x="pmtDiam*5" y="0" z="0"/>
+</union>
+
+<union name="fiberCore6">
+  <first ref="fiberCore5"/>
+  <second ref="fiberCoreSolid"/>
+  <position name="PositionCoreFiber6" unit="mm" x="pmtDiam*6" y="0" z="0"/>
+</union>
+
+<!-- top -->
+
+<union name="fiberCore7">
+  <first ref="fiberCore6"/>
+  <second ref="fiberCore6"/>
+  <position name="PositionCoreFiber7" unit="mm" x="0" y="pmtDiam*6" z="0"/>
+</union>
+
+
+<!-- Right side -->
+
+
+<union name="fiberCore8">
+  <first ref="fiberCore7"/>
+  <second ref="fiberCore4"/>
+  <position name="PositionCoreFiber8" unit="mm" x="pmtDiam*6" y="pmtDiam" z="0"/>
+  <rotation name="RotateZ" z="90" unit="deg"/>
+</union>
+
+
+<!-- Left side -->
+
+
+<union name="fiberCoreSolid">
+  <first ref="fiberCore8"/>
+  <second ref="fiberCore4"/>
+  <position name="PositionCoreFiber9" unit="mm" x="0" y="pmtDiam" z="0"/>
+  <rotation name="RotateZ" z="90" unit="deg"/>
+</union>
+
