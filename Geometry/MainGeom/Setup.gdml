@@ -237,7 +237,7 @@
     </volume>
     
     <volume name="pmtVolume">
-      <materialref ref="G4_Galactic"/>
+      <materialref ref="G4_Galactic" />
       <solidref ref="pmtSolid"/>
     </volume>
 
