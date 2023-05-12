@@ -7,7 +7,7 @@ void RootDraw2Histograms(TString fName0, TString fName1, TString fOutputName, do
 
   TCanvas *c1 = new TCanvas();
   
-  TFile *f0 = new TFile(fName0);//ID
+  TFile *f0 = new TFile(fName0);//AMOTech
   TFile *f1 = new TFile(fName1);//Armor
 
   TH1F *h0 = new TH1F();

@@ -18,7 +18,7 @@ void SelectOneEvent(const string& fName, int entry=0){//const std::string& fName
     cout << "Problem reading Geant4 metadata class!" << endl;
     return 6;
   }
-  geant4Metadata->PrintMetadata();
+  // geant4Metadata->PrintMetadata();
   
   vector< TString > VActiveVolumes = geant4Metadata->GetActiveVolumes();
   cout << VActiveVolumes.size() << " active volume(s)" << ": " << endl;

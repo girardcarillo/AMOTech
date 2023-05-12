@@ -17,7 +17,7 @@
 
     <parameter name="gdmlFile" value="Setup.gdml"/>
     <parameter name="subEventTimeDelay" value="100us"/>
-    <parameter name="nRequestedEntries" value="1000000"/>
+    <parameter name="nRequestedEntries" value="1000"/>
     <parameter name="seed" value="137"/>
     <parameter name="saveAllEvents" value="true"/> <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!1true-->
     <parameter name="printProgress" value="true"/>
@@ -27,7 +27,7 @@
         <!-- <energy type="flat" range="(1,20)" units="MeV" /> -->
         <energy type="mono" energy="1" units="MeV" />
 	<!-- <angular type="flux" direction="(0,0,-1)" /> -->
-	<angular type="formula" name="Cos2" direction="(0,0,-1)"/>
+	<angular type="formula" name="Cos2" direction="(0,0,-1)" range="(10,40)deg" /> <!---->
       </source>
     </generator>
     
@@ -100,12 +100,29 @@
     <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
     <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
 
-    <!-- EM Physics lists -->
-    <physicsList name="G4EmLivermorePhysics"/>
-    <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-    <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+    <!-- <!-\- EM Physics lists -\-> -->
+    <!-- <physicsList name="G4EmLivermorePhysics"/> -->
+    <!-- <!-\- <physicsList name="G4EmPenelopePhysics"> </physicsList> -\-> -->
+    <!-- <!-\- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -\-> -->
 
-    <!-- Decay physics lists -->
+    <!-- <!-\- Decay physics lists -\-> -->
+    <!-- <physicsList name="G4DecayPhysics"/> -->
+    <!-- <physicsList name="G4RadioactiveDecayPhysics"/> -->
+    <!-- <physicsList name="G4RadioactiveDecay"> -->
+    <!--   <option name="ICM" value="true"/> -->
+    <!--   <option name="ARM" value="true"/> -->
+    <!-- </physicsList> -->
+
+    <!-- <!-\- <!-\\- Hadron physics lists -\\-> -\-> -->
+    <!-- <physicsList name="G4HadronElasticPhysicsHP"/> -->
+    <!-- <physicsList name="G4IonBinaryCascadePhysics"/> -->
+    <!-- <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/> -->
+    <!-- <physicsList name="G4EmExtraPhysics"/> -->
+
+    <!-- SoLid Physics list -->
+    <physicsList name="G4EmStandardPhysics"/>
+    <physicsList name="G4EmExtraPhysics"/>
+
     <physicsList name="G4DecayPhysics"/>
     <physicsList name="G4RadioactiveDecayPhysics"/>
     <physicsList name="G4RadioactiveDecay">
@@ -113,41 +130,45 @@
       <option name="ARM" value="true"/>
     </physicsList>
 
-    <!-- <!-\- Hadron physics lists -\-> -->
-    <!-- <physicsList name="G4HadronElasticPhysicsHP"/> -->
-    <!-- <physicsList name="G4IonBinaryCascadePhysics"/> -->
-    <!-- <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/> -->
-    <!-- <physicsList name="G4EmExtraPhysics"/> -->
+    <physicsList name="G4IonPhysics"/>
+    <physicsList name="G4IonQMDPhysics"/>
+    <physicsList name="G4IonElasticPhysics"/>
 
-    <!-- SoLid Physics list -->
-    <physicsList name="HadronElasticProcess"/>
-    <physicsList name="ChipsNeutronElasticXS"/>
-    <physicsList name="NeutronHPElasticData"/>
-    <physicsList name="NeutronHPThermalScatteringData"/>
+    <physicsList name="G4StoppingPhysics"/>
+    <physicsList name="G4HadronElasticPhysicsHP"/>
+    <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+    <physicsList name="G4HadronPhysicsQGSP_BERT_HP"/>
 
-    <physicsList name="NeutronHPElastic"/>
-    <physicsList name="NeutronHPThermalScattering"/>
-    <physicsList name="ChipsElasticModel"/>
-    <physicsList name="NeutronInelasticProcess"/>
-    <physicsList name="NeutronHPInelasticData"/>
-    <physicsList name="NeutronInelasticXS"/>
-    <physicsList name="NeutronHPInelastic"/>
-    <physicsList name="CascadeInterface"/>
+    <!-- SoLid Neutron Physics list -->
+    <physicsList name="G4HadronElasticProcess"/>
+    <physicsList name="G4ChipsNeutronElasticXS"/>
+    <physicsList name="G4NeutronHPElasticData"/>
+    <physicsList name="G4NeutronHPThermalScatteringData"/>
 
-    <physicsList name="HadronCaptureProcess"/>
-    <physicsList name="NeutronHPCaptureData"/>
-    <physicsList name="NeutronCaptureXS"/>
-    <physicsList name="NeutronHPCapture"/>
-    <physicsList name="NeutronRadCapture"/>
+    <physicsList name="G4NeutronHPElastic"/>
+    <physicsList name="G4NeutronHPThermalScattering"/>
+    <physicsList name="G4ChipsElasticModel"/>
+    <physicsList name="G4NeutronInelasticProcess"/>
+    <physicsList name="G4NeutronHPInelasticData"/>
+    <physicsList name="G4NeutronInelasticXS"/>
+    <physicsList name="G4NeutronHPInelastic"/>
+    <physicsList name="G4CascadeInterface"/>
 
-    <physicsList name="HadronFissionProcess"/>
-    <physicsList name="NeutronHPFissionData"/>
-    <physicsList name="NeutronHPFission"/>
+    <physicsList name="G4HadronCaptureProcess"/>
+    <physicsList name="G4NeutronHPCaptureData"/>
+    <physicsList name="G4NeutronCaptureXS"/>
+    <physicsList name="G4NeutronHPCapture"/>
+    <physicsList name="G4NeutronRadCapture"/>
+
+    <physicsList name="G4HadronFissionProcess"/>
+    <physicsList name="G4NeutronHPFissionData"/>
+    <physicsList name="G4NeutronHPFission"/>
+
     
   </TRestGeant4PhysicsLists>
 
   <!--  -->
-
+ 
   <!-- <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/> -->
   
   <!-- Final Tag -->
