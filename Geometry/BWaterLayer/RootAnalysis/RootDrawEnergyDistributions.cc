@@ -1,0 +1,155 @@
+// RootDraw2Histograms("../RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/SelectedEvents/OutputFiles/energy_deposited_AMOTech_and.root","../RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/SelectedEvents/OutputFiles/energy_deposited_Armor_and.root","energy_deposited_Armor_AMOTech_and.pdf",1)
+
+#include "TFile.h"
+#include "TTree.h"
+
+void RootDrawEnergyDistributions(int BWaterThickness, double PrimaryEnergy, string particleType, string bore = "") {
+
+  TCanvas *c1 = new TCanvas("c1","",2560,1368);
+
+  stringstream stream;
+  stream << fixed << setprecision(0) << PrimaryEnergy;
+  string senergy = stream.str();
+  // TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/" + particleType + "/Simus_" + particleType + "_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm_Threshold0keV_EnergyDeposited";
+
+  // test tmp
+TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/tmp/Simus_" + particleType + "_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm_Threshold0keV_EnergyDeposited";
+  
+  // test for thermal
+  // TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/Simus_neutron_2.5e-08MeV_"+bore+"Water"+to_string(BWaterThickness)+"mm_Threshold0keV_EnergyDeposited";
+  
+  TFile *f0 = new TFile(path + "_Sensitive_or.root");
+  TFile *f1 = new TFile(path + "_generator_or.root");
+  TFile *f2 = new TFile(path + "_neutrons_or.root");
+  TFile *f3 = new TFile(path + "_gammas_or.root");
+
+  auto hs = new THStack("hs","");
+  
+  TH1F *hTotal = new TH1F();
+  hTotal = (TH1F*)f0->Get("h0");
+
+  TH1F *hPrimary = new TH1F();
+  hPrimary = (TH1F*)f1->Get("h_generator");
+  
+  TH1F *hNeutrons = new TH1F();
+  hNeutrons = (TH1F*)f2->Get("h_neutrons");
+
+  TH1F *hGammas = new TH1F();
+  hGammas = (TH1F*)f3->Get("h_gammas");
+  
+  // hTotal->SetNameTitle("hTotal", "");
+  // if (!(hTotal->GetSumw2N() > 0)) hTotal->Sumw2(kTRUE); // ensure proper error propagation
+  // hTotal->Add(hPrimary, -1.0);
+  
+  
+  hPrimary->Rebin(4);
+  hPrimary->SetLineColor(kOrange+8);
+  hPrimary->SetLineWidth(hTotal->GetLineWidth());
+  // hPrimary->SetFillColor(hPrimary->GetLineColor());
+  // hPrimary->GetXaxis()->SetLimits(hTotal->GetXaxis()->GetXmin(),hTotal->GetXaxis()->GetXmax());
+  hs->Add(hPrimary);
+  // hPrimary->Draw("SAME");
+
+  hNeutrons->Rebin(4);
+  hNeutrons->SetLineColor(kOrange-2);
+  hNeutrons->SetLineWidth(hTotal->GetLineWidth());
+  // hNeutrons->SetFillColor(hNeutrons->GetLineColor());
+  // hNeutrons->GetXaxis()->SetLimits(hTotal->GetXaxis()->GetXmin(),hTotal->GetXaxis()->GetXmax());
+  hs->Add(hNeutrons);
+  // hNeutrons->Draw("SAME");
+  
+  hGammas->Rebin(4);
+  hGammas->SetLineColor(kPink-8);
+  hGammas->SetLineWidth(hTotal->GetLineWidth());
+  // hGammas->SetFillColor(hGammas->GetLineColor());
+  // hGammas->GetXaxis()->SetLimits(hTotal->GetXaxis()->GetXmin(),hTotal->GetXaxis()->GetXmax());
+  hs->Add(hGammas);
+  // hGammas->Draw("SAME");
+  
+  hTotal->Rebin(4);
+  hTotal->SetLineColor(kCyan+4);
+  // hTotal->SetFillStyle(3004);
+  // hTotal->SetFillColor(hTotal->GetLineColor());
+  hTotal->SetLineWidth(1);
+  hs->Add(hTotal);
+  // hTotal->Draw();
+
+  hs->Draw("nostack");
+  hs->SetTitle("");
+  hs->GetXaxis()->SetTitle("Energy (MeV)");
+  hs->GetYaxis()->SetTitle("# Counts");
+  // hs->SetMaximum(1.e4);
+  hs->SetMaximum(2.e5);
+  hs->SetMinimum(1);
+  
+  c1->SetLogy();
+  // c1->SetLogx();
+  
+  TLine *line = new TLine(PrimaryEnergy,hTotal->GetMinimum(),PrimaryEnergy,hs->GetMaximum());
+  line->SetLineColor(kRed); 
+  line->SetLineWidth(2); 
+  line->SetLineStyle(7); 
+  line->Draw(""); 
+
+  // TLine *line1 = new TLine(0.478,hTotal->GetMinimum(),0.478,hTotal->GetMaximum()+5000);
+  // line1->SetLineColor(kBlack); 
+  // line1->SetLineWidth(2); 
+  // line1->SetLineStyle(2); 
+  // line1->Draw(""); 
+
+  // TLine *line2 = new TLine(2.22,hTotal->GetMinimum(),2.22,hTotal->GetMaximum()+5000);
+  // line2->SetLineColor(kBlack); 
+  // line2->SetLineWidth(2); 
+  // line2->SetLineStyle(2); 
+  // line2->Draw("");
+
+  // Attention avec ca, c'est pas tres propre de le faire a la main, si la stat change
+  double fraction_primary = 0. ;
+  if (particleType == "neutron") {
+    if (PrimaryEnergy == 1) fraction_primary = 1000000.;
+    else if (PrimaryEnergy == 20) fraction_primary = 10000.;
+    else if (PrimaryEnergy == 100 && bore == "B") fraction_primary = 20000.;
+    else if (PrimaryEnergy == 100 && bore == "") fraction_primary = 1000.;
+  }
+  else if (particleType == "gamma") {
+    if (PrimaryEnergy == 2.6) fraction_primary = 100000.;
+    else if (PrimaryEnergy == 7.6) fraction_primary = 100000.;
+  }
+
+  TLegend *legend = new TLegend(0.61767, 0.618019, 0.764269, 0.892777);
+  // TLegend *legend = new TLegend(0.750977, 0.60834, 0.897576, 0.883842);
+  legend->AddEntry(line, "Primary energy", "l");
+  // legend->AddEntry(hTotal, "Total energy", "l");
+  legend->AddEntry(hTotal, TString::Format("Total energy %1.3g%%", hTotal->GetEntries()/fraction_primary*100), "l");
+  if (particleType == "neutron") {
+    if (hPrimary->GetEntries()) legend->AddEntry(hPrimary, TString::Format("Prim. neutrons %1.2g%%", hPrimary->GetEntries()/fraction_primary*100), "l");
+    if (hNeutrons->GetEntries()) legend->AddEntry(hNeutrons, TString::Format("Sec. neutrons %1.2g%%", hNeutrons->GetEntries()/fraction_primary*100), "l");
+    if (hGammas->GetEntries()) legend->AddEntry(hGammas, TString::Format("#gamma %1.2g%%", hGammas->GetEntries()/fraction_primary*100), "l");
+  }
+  else if (particleType == "gamma") {
+    if (hPrimary->GetEntries()) legend->AddEntry(hPrimary, TString::Format("Prim. #gamma %1.2g%%", hPrimary->GetEntries()/fraction_primary*100), "l");
+    if (hGammas->GetEntries()) legend->AddEntry(hGammas, TString::Format("Sec. #gamma %1.2g%%", hGammas->GetEntries()/fraction_primary*100), "l");
+    if (hNeutrons->GetEntries()) legend->AddEntry(hNeutrons, TString::Format("Neutrons %1.2g%%", hNeutrons->GetEntries()/fraction_primary*100), "l");
+  }
+  legend->SetBorderSize(0);
+  legend->SetFillColor(0);
+  legend->Draw();
+
+  hs->GetXaxis()->SetNdivisions(12);
+      
+  // gPad->Update();
+  // TPaveStats *st = (TPaveStats*)hTotal->FindObject("stats");
+  // st->SetBorderSize(0);
+  // st->SetX1NDC(0.658718);
+  // st->SetY1NDC(0.743857);
+  // st->SetX2NDC(0.860438);
+  // st->SetY2NDC(0.77513);
+
+  // gPad->Update();
+  // gStyle->SetOptStat("e");
+
+  TString fOutputName =  "Energy_distributions_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm.pdf";
+  // c1->Update();  
+  c1->SaveAs(fOutputName);
+  
+}

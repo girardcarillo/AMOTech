@@ -17,7 +17,7 @@
 
 string generateOutputFileName(const char* particleType, double primaryEnergy, double bWaterThickness, double armorDetectionThreshold, const char* selectedVolumes, const char* prefix) {
   ostringstream ss;
-  ss << "RootFiles_SelectedEvents/Simus_" << particleType << "_" << setprecision(0) << primaryEnergy << "MeV_BWater"
+  ss << "RootFiles_SelectedEvents/Simus_" << particleType << "_" << setprecision(3) << primaryEnergy << "MeV_BWater"
      << static_cast<int>(bWaterThickness) << "mm_Threshold" << setprecision(3) << armorDetectionThreshold << "keV_EnergyDeposited_" << prefix << "_" << selectedVolumes << ".root";
   return ss.str();
 }
@@ -32,7 +32,7 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, double ArmorDetec
   time(&start);
 
   // Define the input file name
-  const TString& fName = "../../RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/RestG4_RootOutputFiles/RunArmor_neutrons_1MeV_BWater" + to_string(BWaterThickness) + "_restG4_SensVol_lsAMT.root";
+  const TString& fName = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/MainGeom/RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/RestG4_RootOutputFiles/RunArmor_neutrons_1MeV_BWater" + to_string(BWaterThickness) + "_restG4_SensVol_lsAMT.root";
 
   // Print some information about the current execution
   cout << "\n" << "Executing Root Macro SelectEvents(\"" << SelectedVolumes << "\", " << BWaterThickness << ", " << ArmorDetectionThreshold << ")" << "\n";
@@ -49,13 +49,16 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, double ArmorDetec
   cout << "Number of events " << nEvents << "\n";
 
   // Read the Geant4 metadata class
-  cout << "Testing reading of Geant4 metadata class" << "\n";
+  cout << "Testing reading of Geant4 metadata class...";
   TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
 
   // If there is an issue with reading the metadata class, print an error message and return
   if (!geant4Metadata) {
     cerr << "Problem reading Geant4 metadata class!" << "\n";
     return 6;
+  }
+  else {
+    cout << " ok" << endl;
   }
 
   // Print some information about the active volumes
@@ -93,8 +96,8 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, double ArmorDetec
   int counter = 0;
   int counter_selected = 0;
   double Mean_TotalEnergy = 0.0;
-  const int Total_number_ev_loop = 10000; // for tests
-  // int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
+  // const int Total_number_ev_loop = 1000; // for tests
+  const int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
 
   // Create output files
   const auto Threshold_vs_Rate = make_unique<ofstream>(); 
