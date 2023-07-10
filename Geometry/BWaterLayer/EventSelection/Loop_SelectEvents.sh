@@ -1,18 +1,14 @@
 #!/bin/bash
 
 # Define paths to the files to be removed if they exist
-FILE1=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/Threshold_vs_Rate_files/Threshold_vs_Rate.txt
-FILE2=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_MeanTotalEnergy/Thickness_vs_MeanTotalEnergy.txt
-FILE3=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/Thickness_vs_Rate_files/Thickness_vs_Rate.txt
-FILE4=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_MeanSensitiveEnergy/Thickness_vs_MeanSensitiveEnergy.txt
-FILE5=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationAllPart/Thickness_vs_Attenuation.txt
-FILE5=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_Attenuation/Thickness_vs_Attenuation.txt
-FILE6=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationNeutron/Thickness_vs_AttenuationNeutron.txt
-FILE6=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationGamma/Thickness_vs_AttenuationGamma.txt
-FILE7=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationGenerator/Thickness_vs_AttenuationGenerator.txt
+FILE1=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationAllPart/Thickness_vs_AttenuationAllPart.txt
+FILE2=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_Attenuation/Thickness_vs_Attenuation.txt
+FILE3=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationNeutron/Thickness_vs_AttenuationNeutron.txt
+FILE4=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationGamma/Thickness_vs_AttenuationGamma.txt
+FILE5=/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/TxtFiles_Thickness_vs_AttenuationGenerator/Thickness_vs_AttenuationGenerator.txt
 
 # Check if any of the files exist
-if test -f "$FILE1" || test -f "$FILE2" || test -f "$FILE3"; then
+if test -f "$FILE1" || test -f "$FILE2" || test -f "$FILE3" || test -f "$FILE4" || test -f "$FILE5"; then
     # If files exist, prompt user to remove them
     echo "These files exist:"
     echo "$FILE1"
@@ -20,8 +16,6 @@ if test -f "$FILE1" || test -f "$FILE2" || test -f "$FILE3"; then
     echo "$FILE3"
     echo "$FILE4"
     echo "$FILE5"
-    echo "$FILE6"
-    echo "$FILE7"
     read -p "Do you want to remove them? (y)" -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
@@ -48,10 +42,10 @@ Execute_RootMacro(){
     # SelectEvents(string SelectedVolumes, int BWaterThickness, double energy, string partType, bool WaterOnly = 0, bool thermal = 0, double DetectionThreshold = 0.) {
     restRoot -l  <<EOC
 .L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron");}
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron",1);}
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron");}
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1);}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron");}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",1);}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron");}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron",1);}
 .q
 EOC
 

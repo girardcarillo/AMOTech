@@ -15,6 +15,143 @@
 // iterating on i thickness (100,200,300,400)
 // iterating on j threshold (50,100,150,200,250,300,350,400,450,500)
 
+void storeChildrenTracks(int trackNumber, const TRestGeant4Event& event, const map<int, int>& trackIDToNumberMap, vector<int>& childrenTracks) {
+  for (const auto& childTrack : event.GetTrack(trackNumber).GetChildrenTracks())
+    {
+      int childTrackID = childTrack->GetTrackID();
+
+      // Check if the child track ID exists in the track ID to number map
+      auto iter = trackIDToNumberMap.find(childTrackID);
+      if (iter != trackIDToNumberMap.end())
+	{
+	  int childTrackNumber = iter->second;
+
+	  // Store the child track ID in the vector
+	  childrenTracks.push_back(childTrackID);
+
+	  // Recursive call to store the children tracks of the current child track
+	  storeChildrenTracks(childTrackNumber, event, trackIDToNumberMap, childrenTracks);
+	}
+    }
+}
+
+// Function to count the occurrences of track hits and store the indices
+void countTrackHits(const vector<vector<int>>& aSensitiveTrackHitCollection,
+		    unordered_map<int, vector<int>>& trackHitMap,
+		    vector<int>& nonRepeatingTrackIDs,
+		    int& smallestHitNumber)
+{
+  for (const auto& pair : aSensitiveTrackHitCollection) {
+    int trackNumber = pair[0];
+    int hitNumber = pair[1];
+
+    if (trackHitMap.count(trackNumber) == 0) {
+      trackHitMap[trackNumber] = { hitNumber };
+      nonRepeatingTrackIDs.push_back(trackNumber);
+    } else {
+      trackHitMap[trackNumber].push_back(hitNumber);
+    }
+
+    if (trackHitMap[trackNumber].size() > 1 && hitNumber < smallestHitNumber) {
+      smallestHitNumber = hitNumber;
+    }
+  }
+}
+
+// Function to find the track IDs with the smallest hit number among the repeating track IDs
+void findTrackIDsWithSmallestHitNumber(const unordered_map<int, vector<int>>& trackHitMap,
+				       const vector<int>& nonRepeatingTrackIDs,
+				       int smallestHitNumber,
+				       vector<vector<int>>& trackHitVector)
+{
+  for (const auto& pair : trackHitMap) {
+    int trackNumber = pair.first;
+    const vector<int>& hitNumbers = pair.second;
+
+    if (hitNumbers.size() > 1 && find(hitNumbers.begin(), hitNumbers.end(), smallestHitNumber) != hitNumbers.end()) {
+      trackHitVector.push_back({ trackNumber, smallestHitNumber });
+      break;
+    }
+  }
+
+  for (int trackNumber : nonRepeatingTrackIDs) {
+    const vector<int>& hitNumbers = trackHitMap.at(trackNumber);
+    if (hitNumbers.size() == 1) {
+      trackHitVector.push_back({ trackNumber, hitNumbers[0] });
+    }
+  }
+}
+
+// Function to find the smallest trackID among the trackHitVector and check their affiliation
+void findAndCheckTrackAffiliation(vector<vector<int>>& trackHitVector,
+				  const TRestGeant4Event& event,
+				  const map<int, int>& trackIDToNumberMap)
+{
+  if (trackHitVector.size() <= 1) {
+    return;
+  }
+
+  int smallestTrackID = numeric_limits<int>::max();
+  int smallestTrackIDIndex = -1;
+
+  for (int i = 0; i < trackHitVector.size(); ++i) {
+    int trackNumber = trackHitVector[i][0];
+    int trackID = event.GetTrack(trackNumber).GetTrackID();
+
+    if (trackID < smallestTrackID) {
+      smallestTrackID = trackID;
+      smallestTrackIDIndex = i;
+    }
+  }
+
+  // cout << "Smallest TrackID: " << smallestTrackID << ", Index: " << smallestTrackIDIndex << endl;
+
+  vector<int> childrenTracks;
+  storeChildrenTracks(trackHitVector[smallestTrackIDIndex][0], event, trackIDToNumberMap, childrenTracks);
+
+  // // cout << "Children Tracks:\n";
+  // for (const auto& trackID : childrenTracks) {
+  //   cout << "TrackID: " << trackID << "\n";
+  // }
+
+  for (auto it = trackHitVector.begin(); it != trackHitVector.end(); ) {
+    int trackNumber = (*it)[0];
+    int trackID = event.GetTrack(trackNumber).GetTrackID();
+
+    if (trackID != smallestTrackID) {
+      bool isPresent = find(childrenTracks.begin(), childrenTracks.end(), trackID) != childrenTracks.end();
+
+      if (isPresent) {
+	// cout << "The trackID " << trackID << " is a child of trackID " << smallestTrackID << endl;
+	it = trackHitVector.erase(it);
+      } else {
+	// cout << "The trackID " << trackID << " is NOT a child of trackID " << smallestTrackID << endl;
+	++it;
+      }
+    } else {
+      ++it;
+    }
+  }
+}
+
+// Main algorithm to check if trackIDs are related
+void checkTrackRelation(const std::vector<std::vector<int>>& aSensitiveTrackHitCollection,
+                        const TRestGeant4Event& event,
+                        const std::map<int, int>& trackIDToNumberMap,
+                        std::vector<std::vector<int>>& trackHitVector)
+{
+  std::unordered_map<int, std::vector<int>> trackHitMap;
+  std::vector<int> nonRepeatingTrackIDs;
+  int smallestHitNumber = std::numeric_limits<int>::max();
+
+  countTrackHits(aSensitiveTrackHitCollection, trackHitMap, nonRepeatingTrackIDs, smallestHitNumber);
+  findTrackIDsWithSmallestHitNumber(trackHitMap, nonRepeatingTrackIDs, smallestHitNumber, trackHitVector);
+  findAndCheckTrackAffiliation(trackHitVector, event, trackIDToNumberMap);
+
+  
+}
+
+
 string generateOutputFileName(const char* particleType, double primaryEnergy, double bWaterThickness, bool WaterOnly, double armorDetectionThreshold, const char* selectedVolumes, const char* prefix)
 {
 
@@ -46,9 +183,6 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
   // BWaterThickness                Thickness of the borated water
   // DetectionThreshold = 0.        To apply an energy threshold, in the armor, on the event selection
 
-  int Total_number_ev_loop = 2; // for tests
-  // int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
-  
   // Evaluate the running time of this code
   time_t start, end;
   time(&start);
@@ -189,7 +323,9 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
   const auto h2_Depth = make_unique<TH2F>("h2_Depth", "", nbins, xmin, xmax, nbins, ymin, ymax);
   const auto h2_DepthEnergyFirstHit = make_unique<TH2F>("h2_DepthEnergyFirstHit", "", nbins, ymin, ymax, nbins, 0, UpperRange);
   const auto h2_DepthEnergy = make_unique<TH2F>("h2_DepthEnergy", "", nbins, ymin, ymax, nbins, 0, UpperRange);
-  
+
+  const auto h_multiplicity = make_unique<TH1F>("h_multiplicity", "", nbins, 0, 10);
+
   // Create output file for debugging
   ostringstream ss;
   ss << "TxtFiles_SelectedEvents/Simus_" << PrimaryParticleType.Data() << "_" << setprecision(3) << PrimaryEnergy << "MeV_BWater"
@@ -214,22 +350,19 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
   const auto Thickness_vs_AttenuationAllPart = make_unique<ofstream>();
   const auto Thickness_vs_Attenuation = make_unique<ofstream>();
   const auto Thickness_vs_AttenuationGenerator = make_unique<ofstream>();
-  
-  bool IsFirstTrackInSensitiveVolume = false;
-  bool IsFirstHitInVolumes = false;
-  bool IsFirstHitInSensitiveVolume = false;
 
   bool IsGenerator = false;
   bool IsNeutron = false;
   bool IsGamma = false;
 
+  int Total_number_ev_loop = 1000; // for tests
+  // int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
+
   // Loop over simulated events
   for (size_t i = 0; i < Total_number_ev_loop; i++)
     {
-      
-      IsFirstHitInVolumes = false;
-      IsFirstHitInSensitiveVolume = false;
-      IsFirstTrackInSensitiveVolume = false;
+
+      // cout << "\nevent " << i << endl;
 
       // Get current event from the simulation data
       run->GetEntry(i);
@@ -291,27 +424,38 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
       // Also because I put the sensitive volume as the second volume and then reccord all events == true.
       // But I don't think I can do differently because I want my two volumes to be sensitive (trigger volumes), but apparently this is not possible with REST.   
       if (EventSelection) {
-	// cout <<"passed the EventSelection condition" << endl;
-	// cout << "sensitive volume position " << event->GetFirstPositionInVolume(1).X() << "," << event->GetFirstPositionInVolume(1).Y() << "," << event->GetFirstPositionInVolume(1).Z() << endl;
-	// cout << "active volume position " << event->GetFirstPositionInVolume(0).X() << "," << event->GetFirstPositionInVolume(0).Y() << "," << event->GetFirstPositionInVolume(0).Z() << endl;
 
-    
-	for (int trackIndex = 0; trackIndex < numberOfTracks; trackIndex++)
-	  // for (int trackIndex=0; trackIndex<2; trackIndex++)
+	// a revoir pcq mtn counter_selected depend aussi de la multiplicite
+	// Print progress and selection info every 1000 events
+	if (i % 1000 == 0) {
+	  cout << setprecision(3) << "\nProgression... " << ((double)i/Total_number_ev_loop)*100. << " %" << " (" << ((double)i/run->GetEntries())*100. << " % of total)" << "\n";
+	  cout << counter_selected << " events selected so far (" << ((double)counter_selected/i)*100 << " % selection)\n" << "\n";
+	}
+
+	int BWaterSensitiveTransportationMultiplicity = 0;
+  
+	vector<vector<int>> aSensitiveTrackHitCollection;
+
+	// Create a map to associate trackIndex with trackID
+	map<int, int> trackIDToNumberMap;
+
+	for (int trackIndex=0; trackIndex<event->GetNumberOfTracks(); trackIndex++) 
+	  // for (int trackIndex=0; trackIndex<5; trackIndex++)
 	  {
 
 	    const TRestGeant4Track aTrack = event->GetTrack(trackIndex);
-	    const TRestGeant4Hits aHitCollection = event->GetTrack(trackIndex).GetHits();
-	    
-	    int numberOfHits = event->GetTrack(trackIndex).GetNumberOfHits();
-	    TString aParticleName  = event->GetTrack(trackIndex).GetParticleName();
+	    const TRestGeant4Hits aHitCollection = aTrack.GetHits(); 
 
-	    for (int hitIndex = 0; hitIndex < event->GetTrack(trackIndex).GetNumberOfHits(); hitIndex++)
+	    // key trackID, value trackIndex
+	    trackIDToNumberMap[aTrack.GetTrackID()] = trackIndex;
+      
+	    for (int hitIndex=0; hitIndex<aTrack.GetNumberOfHits(); hitIndex++)
 	      {
 
 		TString hitVolume = geant4Metadata->GetGeant4GeometryInfo().GetVolumeFromID(aHitCollection.GetHitVolume(hitIndex));
 
-		////////////////////////////test
+		h2_DepthEnergy->Fill(aHitCollection.GetZ(hitIndex), aHitCollection.GetEnergy(hitIndex) / 1.e3);
+		h2_Depth->Fill(event->GetTrack(trackIndex).GetHits().GetX(hitIndex), event->GetTrack(trackIndex).GetHits().GetZ(hitIndex));
 		
 		// Selection on existing transportation process in the track
 		if (aTrack.GetProcessName(aHitCollection.GetHitProcess(hitIndex)) == "Transportation"
@@ -319,219 +463,132 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 		    && geant4Metadata->GetGeant4GeometryInfo().GetVolumeFromID(aHitCollection.GetHitVolume(hitIndex + 1)) == "Sensitive")
 		  {
 
-		    // Selection on first one to make transportation process
-		    if (aHitCollection.GetTime(hitIndex) < aHitTime)
-		      {
-
-			aHitTime = aHitCollection.GetTime(hitIndex);
-			
-			
-		      }
+		    BWaterSensitiveTransportationMultiplicity++;
+		    
+		    aSensitiveTrackHitCollection.push_back({trackIndex, hitIndex});
 	      
-		  }
+		  } // end if condition on transportation BWater -> Sensitive
 
-		/////////////////////////////////////
-		
-		// To ensure some energy were deposited in one of the two volumes by the track. May not be necessary with EventSelection
-		if (event->GetTrack(trackIndex).GetEnergyInVolume("BWater") > 0 || event->GetTrack(trackIndex).GetEnergyInVolume("Sensitive") > 0)
-		  {
-		    
-		    // To ensure physical hit
-		    if (event->GetTrack(trackIndex).GetHits().GetEnergy(hitIndex) > 0)
-		      {
-		      
-			if (!IsFirstHitInSensitiveVolume)
-			  {
-			    
-			    if(hitVolume == "Sensitive")
-			      {
-			    
-				IsFirstHitInSensitiveVolume = true;
-			    
-				// Selection on particle type
+	      }
 
-				// Select events were the primary neutron deposit energy directly in the Sensitive volume:
-				if (event->GetTrack(trackIndex).GetParentID() == 0)
-				  {
-
-				    counter_generator++;
-				    IsGenerator = true;
-				    cout << "event " << i << " generator particle" << endl;
-			      
-				  }
-
-				else
-				  {
-
-				    if (aParticleName == "neutron")
-				      {
-				
-					counter_neutrons++;
-					IsNeutron = true;
-					cout << "event " << i << " particle " << aParticleName << endl;
-				
-				      }
-		    
-				    // Select gammes interacting in Sensitive volume
-				    else if (aParticleName == "gamma")
-				      {
-				
-					counter_gammas++;
-					IsGamma = true;
-					cout << "event " << i << " particle " << aParticleName << endl;
-				
-				      }
-			    
-				  } // end if condition on selction on particle type
-		      
-			      } // end if condition on first hit is in sensitive volume
-
-			  }
-			  
-			// Store the position of the first hit
-			if (!IsFirstHitInVolumes)
-			  {
-
-			    IsFirstHitInVolumes = true;
-
-			    h2_DepthEnergyFirstHit->Fill(aHitCollection.GetZ(hitIndex), aHitCollection.GetEnergy(hitIndex) / 1.e3);
-			    h2_DepthFirstHit->Fill(aHitCollection.GetX(hitIndex), aHitCollection.GetZ(hitIndex));
-		
-			  } // end of selection on first track in volume
-
-			h2_DepthEnergy->Fill(aHitCollection.GetZ(hitIndex), aHitCollection.GetEnergy(hitIndex) / 1.e3);
-			h2_Depth->Fill(event->GetTrack(trackIndex).GetHits().GetX(hitIndex), event->GetTrack(trackIndex).GetHits().GetZ(hitIndex));
-
-		      } // end of if condition of physical hit (hit energy > 0)
-
-		  } // end of if condition on energy in volumes BWater or Sensitive > 0
-
-	      } // end for loop on hits
-
-	  } // end for loop on tracks
-
-	// Fill 1D histogram to store energy deposited in Sensitive
-	h0->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
-
-	// Fill 1D histogram to store energy deposited in BWater
-	h1->Fill(event->GetEnergyDepositedInVolume(ActiveVolumeID)/1000.);
+	  }
 	
-	if (IsGenerator) 
-	  h_generator->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
-      
-	if (IsNeutron)
-	  h_neutrons->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
-      
-	if (IsGamma) 
-	  h_gammas->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
-      
+	vector<vector<int>> trackHitVector;
 
-	// debut de la section a retravailler (a decaler au-dessus)
-	      
-	if (!isnan(event->GetFirstPositionInVolume(1).X())){
-		
-	  // cout << "passed the FirstPositionInVolume condition " << endl;
-		
-	  // Increment counter_selected when EventSelection is true
-	  ++counter_selected;
-	      
-	  // // Print progress and selection info every 1000 events
-	  // if (i % 1000 == 0) {
-	  //   cout << setprecision(3) << "\nProgression... " << ((double)i/Total_number_ev_loop)*100. << " %" << " (" << ((double)i/run->GetEntries())*100. << " % of total)" << "\n";
-	  //   cout << counter_selected << " events selected so far (" << ((double)counter_selected/i)*100 << " % selection)\n" << "\n";
-	  // }
+	// If up to one hit in the Sensitive volume
+	if (BWaterSensitiveTransportationMultiplicity <= 1)
+	  {
+	    // Fill trackHitVector with the content of aSensitiveTrackHitCollection
+	    trackHitVector.assign(aSensitiveTrackHitCollection.begin(), aSensitiveTrackHitCollection.end());
 
-	  // begining the selection on track IDs
+ 	  }
+	  
+	// If there is more than one hit
+	else
+	  {
+	    
+	    // check is the tracks reaching the sensitive volume are related or not
+	    
+	    checkTrackRelation(aSensitiveTrackHitCollection, *event, trackIDToNumberMap, trackHitVector);
 
-	  // int trackID = 0;
-	  // int parentID = 0;
-	  // TString particleName;
-	  // TString parentParticleName;
-	  // Double_t trackEnergyInSensitiveVolume = 0.;
-	  // Double_t trackEnergyInBWaterVolume = 0.;
-	  // Double_t totalDepositedEnergy = 0.;
-	  // Double_t initialKineticEnergy = 0.;
-	  // TString initialVolume;
-	  // TString finalVolume;
-	  // int counter_entering_SensitiveVolume = 0;
-
-
-	  // for (int trackIndex=0; trackIndex<event->GetNumberOfTracks(); trackIndex++) {
-	  //   // for (int trackIndex=0; trackIndex<3; trackIndex++) {
-		  
-	  //   if (!IsFirstTrackInSensitiveVolume) {
-		    
-	  //     // if (event->GetTrack(trackIndex).GetInitialVolume() == "Sensitive") {
-	  //     if (!isnan(event->GetTrack(trackIndex).GetFirstPositionInVolume(1).X())) {
-	  // 	IsFirstTrackInSensitiveVolume = true;
-
-	  // 	trackID = event->GetTrack(trackIndex).GetTrackID();
-	  // 	particleName = event->GetTrack(trackIndex).GetParticleName();
-		      
-	  // 	parentID = event->GetTrack(trackIndex).GetParentID();
-		      
-	  // 	totalDepositedEnergy = event->GetTrack(trackIndex).GetTotalDepositedEnergy();
-	  // 	initialKineticEnergy = event->GetTrack(trackIndex).GetInitialKineticEnergy();
-		    
-	  // 	trackEnergyInSensitiveVolume = event->GetTrack(trackIndex).GetEnergyInVolume(1);
-	  // 	trackEnergyInBWaterVolume = event->GetTrack(trackIndex).GetEnergyInVolume(0);
-
-	  // 	initialVolume = event->GetTrack(trackIndex).GetInitialVolume();
-	  // 	finalVolume = event->GetTrack(trackIndex).GetFinalVolume();
-
-	  // 	// Selection on particle type
-		    
-	  // 	// Select neutrons interacting in Sensitive volume (other than primary neutrons)
-
-	  // 	// Select events were the primary neutron deposit energy directly in the Sensitive volume:
-	  // 	if (event->GetTrack(trackIndex).GetParentID() == 0) {
-	  // 	  counter_generator++;
-	  // 	  IsGenerator = true;
-	  // 	}
-
-	  // 	else {
-
-	  // 	  // parentParticleName = event->GetTrack(trackIndex).GetParentTrack()->GetParticleName();
-	  // 	  parentParticleName = event->GetTrack(trackIndex).GetParticleName();
-			      
-	  // 	  if (parentParticleName == "neutron") {
-	  // 	    counter_neutrons++;
-	  // 	    IsNeutron = true;
-	  // 	  }
-		    
-	  // 	  // Select gammes interacting in Sensitive volume
-	  // 	  else if (parentParticleName == "gamma") {
-	  // 	    counter_gammas++;
-	  // 	    IsGamma = true;
-	  // 	  }
-
-	  // 	} // end if PrimaryGenerator
-		      
-	  //     } // end if condition on track beginning in sensitive volume
-
-	  //   } // end if condition on IsFirstTrackInSensitiveVolume
-		  
-	  // } // end for loop on track ids
-
-	  // h0->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID)/1000.);
-	  // if (IsGenerator) {
-	  //   h_generator->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID)/1000.);
-	  // }
-	  // if (IsNeutron) {
-	  //   h_neutrons->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID)/1000.);
-	  // }
-	  // if (IsGamma) {
-	  //   h_gammas->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID)/1000.);
-	  // }
+	    BWaterSensitiveTransportationMultiplicity = trackHitVector.size();
+	    
+	  } // end of if condition if more than one hit
 	
-	  // Calculate mean total energy 
-	  // Mean_TotalEnergy += (event->GetEnergyDepositedInVolume(SensitiveVolumeID) + event->GetEnergyDepositedInVolume(ActiveVolumeID))/1000.;
-		   
-	} // end if condition on existing deposited energy in Sensitive volume
+	h_multiplicity->Fill(BWaterSensitiveTransportationMultiplicity);
+	
+	if (BWaterSensitiveTransportationMultiplicity)
+	  {
+	    // a deplacer pcq le vecteur trackHitVector depend aussi de la multiplicite
+	    // probablement mettre un bool dans la boucle sur les track/hit avec transportation, et quand true, counter_selected++
+	    // ou alors juste ava,t cette boucle, mettre un if multiplicity > 0, counter_selected++
+	    counter_selected++;
+	    
+	  }
+	
+	// cout << "Multiplicity " << BWaterSensitiveTransportationMultiplicity << endl;
+	
+	// cout << "event " << i << endl;
 
+	// dans cette loop on ne va tourner que sur les ev qui ont depose de l'energie dans le Sensitive
+	for (int i = 0; i < trackHitVector.size(); ++i) {
+	  int trackNumber = trackHitVector[i][0];
+	  int hitNumber = trackHitVector[i][1];
+	  
+	  // cout << "-------------------" << endl;
+	  // cout << " * TrackID: " << event->GetTrack(trackNumber).GetTrackID()
+	  //      << " - Particle: " << event->GetTrack(trackNumber).GetParticleName()
+	  //      << " - ParentID: " << event->GetTrack(trackNumber).GetParentID()
+	  //      << (event->GetTrack(trackNumber).GetParentTrack() != nullptr ? TString::Format(" - Parent particle: %s", event->GetTrack(trackNumber).GetParentTrack()->GetParticleName().Data()).Data() : "")
+	  //      << " - Created by '" << event->GetTrack(trackNumber).GetCreatorProcess()
+	  //      << "' with initial KE of " << ToEnergyString(event->GetTrack(trackNumber).GetInitialKineticEnergy()) << endl;
+	  // cout << "   Initial position " << VectorToString(event->GetTrack(trackNumber).GetInitialPosition())
+	  //      << " at time " << ToTimeString(event->GetTrack(trackNumber).GetGlobalTime())
+	  //      << " - Time length of " << ToTimeString(event->GetTrack(trackNumber).GetTimeLength())
+	  //      << " and spatial length of " << ToLengthString(event->GetTrack(trackNumber).GetLength()) << endl;
 
-      
+	  // cout << "      - Hit " << hitNumber
+	  //      << " - Energy: " << ToEnergyString(event->GetTrack(trackNumber).GetHits().GetEnergy(hitNumber))
+	  //      << " - Process: " << event->GetTrack(trackNumber).GetProcessName(event->GetTrack(trackNumber).GetHits().GetHitProcess(hitNumber))
+	  //      << " - Volume: " << geant4Metadata->GetGeant4GeometryInfo().GetVolumeFromID(event->GetTrack(trackNumber).GetHits().GetHitVolume(hitNumber))
+	  //      << " - Position: (" << VectorToString(TVector3(event->GetTrack(trackNumber).GetHits().GetX(hitNumber),event->GetTrack(trackNumber).GetHits().GetY(hitNumber),event->GetTrack(trackNumber).GetHits().GetZ(hitNumber)))
+	  //      << " - Time: " << ToTimeString(event->GetTrack(trackNumber).GetHits().GetTime(hitNumber))
+	  //      << " - KE: " << ToEnergyString(event->GetTrack(trackNumber).GetHits().GetKineticEnergy(hitNumber)) << endl;
+	  // cout << "-------------------" << endl;
 
+	  // a deplacer, ca n'a aucun sens de mettre ca la
+	  // mais a regarder: il y a probebelemnt un bug dns la selection des ev pcq dans lhisto on voit une barre verticale qui ne devrait pas etre la,
+	  // tous les ev devraient etre sur linterface BWater/scintillateur
+	  // h2_DepthEnergyFirstHit->Fill(event->GetTrack(trackNumber).GetHits().GetZ(hitNumber), event->GetTrack(trackNumber).GetHits().GetEnergy(hitNumber) / 1.e3);
+	  // h2_DepthFirstHit->Fill(event->GetTrack(trackNumber).GetHits().GetX(hitNumber), event->GetTrack(trackNumber).GetHits().GetZ(hitNumber));
+	  
+	  // Fill 1D histogram to store energy deposited in Sensitive
+	  h0->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+
+	  // Fill 1D histogram to store energy deposited in BWater
+	  h1->Fill(event->GetEnergyDepositedInVolume(ActiveVolumeID)/1000.);
+
+	  // Selection on particle type
+
+	  // Select events were the primary neutron deposits energy directly in the Sensitive volume:
+	  if (event->GetTrack(trackNumber).GetParentID() == 0)
+	    {
+	      counter_generator++;
+	      IsGenerator = true;
+	      h_generator->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+	      
+	      // cout << "generator particle" << endl;
+	    }
+	  
+	  else
+	    {
+
+	      // Select secondary neutrons interacting in Sensitive volume
+	      if (event->GetTrack(trackNumber).GetParticleName() == "neutron")
+		{
+		  counter_neutrons++;
+		  IsNeutron = true;
+		  h_neutrons->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+	  
+		  // cout << "particle " << event->GetTrack(trackNumber).GetParticleName() << endl;
+		}
+		    
+	      // Select secondary gammas interacting in Sensitive volume
+	      else if (event->GetTrack(trackNumber).GetParticleName() == "gamma")
+		{
+		  counter_gammas++;
+		  IsGamma = true;
+		  h_gammas->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+
+		  // cout << "particle " << event->GetTrack(trackNumber).GetParticleName() << endl;
+		}
+			    
+	    } // end if condition on selection on particle type
+
+	  
+	}
+
+	
       } // end if condition on EventSelection
 
       else if (isnan(event->GetFirstPositionInVolume(ActiveVolumeID).X()) && isnan(event->GetFirstPositionInVolume(SensitiveVolumeID).X())) {
@@ -609,6 +666,9 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 
   string OutputRootFileName_gammas = generateOutputFileName(PrimaryParticleType.Data(), PrimaryEnergy, BWaterThickness, WaterOnly, DetectionThreshold, SelectedVolumes.c_str(), "gammas");
   h_gammas->SaveAs(OutputRootFileName_gammas.c_str());
+
+  string OutputRootFileName_multiplicity = generateOutputFileName(PrimaryParticleType.Data(), PrimaryEnergy, BWaterThickness, WaterOnly, DetectionThreshold, SelectedVolumes.c_str(), "multiplicity");
+  h_multiplicity->SaveAs(OutputRootFileName_multiplicity.c_str());
 
   // Save execution time to file
   time(&end);
