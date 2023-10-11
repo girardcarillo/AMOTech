@@ -1,10 +1,18 @@
-// RootDraw2Histograms("../RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/SelectedEvents/OutputFiles/energy_deposited_AMOTech_and.root","../RootOutputFiles/FastNeutrons/Test_SensVol_lsAMT/SelectedEvents/OutputFiles/energy_deposited_Armor_and.root","energy_deposited_Armor_AMOTech_and.pdf",1)
+// Example How to run
+// RootDrawInteractionDepth(100,1,"neutron","Depth","B")
 
 #include "TFile.h"
 #include "TTree.h"
 
 void RootDrawInteractionDepth(int BWaterThickness, double PrimaryEnergy, string particleType, TString whichPlot, string bore = "") {
 
+  // the variable whichPlot can be
+  // - Depth
+  // - DepthFristHit
+  // - DepthEnergy
+  // - DepthEnergyFirstHit
+
+  // for runs with Boron bore  = "B"
   
   stringstream stream;
   if (particleType == "gamma") stream << fixed << setprecision(1) << PrimaryEnergy;
@@ -19,7 +27,7 @@ void RootDrawInteractionDepth(int BWaterThickness, double PrimaryEnergy, string 
   // TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/" + particleType + "/Simus_" + particleType + "_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm_Threshold0keV_EnergyDeposited";
 
   // tests tmp directory
-  TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/tmp/Simus_" + particleType + "_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm_Threshold0keV_EnergyDeposited";
+  TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/RootFiles_SelectedEvents/tmp_25-09-2023/Simus_" + particleType + "_" + senergy + "MeV_" + bore + "Water" + to_string(BWaterThickness) + "mm_Threshold0keV_EnergyDeposited";
 
   // tests with SelectOneEvent
   // TString path = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/test_hits.root";

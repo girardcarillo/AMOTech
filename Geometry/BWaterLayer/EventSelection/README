@@ -1,0 +1,14 @@
+The diff between SelectEvents.cc and SelectEvents_bkp.cc is that I removed the super complicated stuff I was doing to select the particle type.
+I found a new way of doing it, which is in SelectOneEvent, and transposed in SelectEvents.cc
+
+File content 25/09/2023:
+TxtFiles_Thickness_vs_AttenuationGenerator/Thickness_vs_AttenuationNeutronGenerator_1-20MeV.txt
+TxtFiles_Thickness_vs_AttenuationGamma/Thickness_vs_AttenuationGamma_1-20MeV.txt
+TxtFiles_Thickness_vs_AttenuationNeutron/Thickness_vs_AttenuationNeutron_1-20MeV.txt
+TxtFiles_Thickness_vs_AttenuationAllPart/Thickness_vs_AttenuationAllPart_1-20MeV.txt
+Come from the execution of Loop_SelectEvents.sh with all statistics:
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron");}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",1);}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron");}
+for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron",1);}
+

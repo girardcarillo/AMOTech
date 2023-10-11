@@ -176,10 +176,22 @@ string generateOutputFileName(const char* particleType, double primaryEnergy, do
   
 }
 
-void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, string partType, bool WaterOnly = 0, bool thermal = 0, double DetectionThreshold = 0.)
+double calculateStandardDeviation(int n_selected, int n_simulated) {
+  // Calculate the probability of success (p)
+  double p = static_cast<double>(n_selected) / n_simulated;
+
+  // Calculate the standard deviation (σ) using the binomial distribution formula
+  double sigma = std::sqrt((p * (1.0 - p)) / n_simulated);
+
+  return sigma;
+}
+
+////////////////////////////////////////////////////////////////////// main macro
+
+void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, string partType, bool WaterOnly = 0, bool thermal = 0, bool Concrete = 0, bool Iron = 0, double DetectionThreshold = 0.)
 {
   
-  // SelectedVolumes                Selection on the volume where energy were deposited
+  // SelectedVolumes                Selection on the volume where energy were deposited // for the current study it's only "or"
   // BWaterThickness                Thickness of the borated water
   // DetectionThreshold = 0.        To apply an energy threshold, in the armor, on the event selection
 
@@ -210,11 +222,69 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
       stream << fixed << setprecision(outputPrecision) << energy;
       string senergy = stream.str();
         	
-      if (WaterOnly)	
-	fName = fName + "WaterOnly/WaterSimus_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
-    
-      else 
-	fName = fName + "BWater/BWaterSimus_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+      if (WaterOnly)
+	{
+
+	  fName += "WaterOnly/" ;
+	  
+	  if (Concrete)
+	    {
+
+	      fName += "Concrete/" ;
+	      
+	      if (Iron)
+		{
+
+		  fName += "Iron/" ;
+		  fName += "WaterSimus_Concrete_Iron_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+		}
+
+	      else
+		{ 
+
+		  fName += "WaterSimus_Concrete_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+		}
+	      
+	    }
+
+	  else
+	    fName = fName + "WaterSimus_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+	}
+      
+      else
+	{
+
+	  fName += "BWater/" ;
+	  
+	  if (Concrete)
+	    {
+
+	      fName += "Concrete/" ;
+	      
+	      if (Iron)
+		{
+
+		  fName += "Iron/" ;
+		  fName += "BWaterSimus_Concrete_Iron_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+		}
+
+	      else
+		{ 
+
+		  fName += "BWaterSimus_Concrete_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+		}
+	      
+	    }
+
+	  else
+	    fName = fName + "BWaterSimus_" + to_string(BWaterThickness) + "mm_" + senergy + "MeV.root";
+
+	}
     
     }
   
@@ -336,7 +406,13 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 
   double Attenuation = 0.0;
   double AttenuationNeutron = 0.0;
+  double AttenuationGamma = 0.0;
   double AttenuationGenerator = 0.0;
+
+  double StdAttenuation = 0.0;
+  double StdAttenuationNeutron = 0.0;
+  double StdAttenuationGamma = 0.0;
+  double StdAttenuationGenerator = 0.0;
   
   int counter = 0;
   int counter_selected = 0;
@@ -344,22 +420,23 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
   int counter_neutrons = 0;
   int counter_gammas = 0;
 
-
   // Create output files
   const auto Threshold_vs_Rate = make_unique<ofstream>(); 
   const auto Thickness_vs_AttenuationAllPart = make_unique<ofstream>();
-  const auto Thickness_vs_Attenuation = make_unique<ofstream>();
+  const auto Thickness_vs_AttenuationNeutron = make_unique<ofstream>();
+  const auto Thickness_vs_AttenuationGamma = make_unique<ofstream>();
   const auto Thickness_vs_AttenuationGenerator = make_unique<ofstream>();
 
   bool IsGenerator = false;
   bool IsNeutron = false;
   bool IsGamma = false;
 
-  int Total_number_ev_loop = 1000; // for tests
-  // int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
+  // int Total_number_ev_loop = 100; // for tests
+  int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
 
   // Loop over simulated events
   for (size_t i = 0; i < Total_number_ev_loop; i++)
+    // for (size_t i = 1; i < 2; i++)
     {
 
       // cout << "\nevent " << i << endl;
@@ -427,7 +504,7 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 
 	// a revoir pcq mtn counter_selected depend aussi de la multiplicite
 	// Print progress and selection info every 1000 events
-	if (i % 1000 == 0) {
+	if (i % 100 == 0) {
 	  cout << setprecision(3) << "\nProgression... " << ((double)i/Total_number_ev_loop)*100. << " %" << " (" << ((double)i/run->GetEntries())*100. << " % of total)" << "\n";
 	  cout << counter_selected << " events selected so far (" << ((double)counter_selected/i)*100 << " % selection)\n" << "\n";
 	}
@@ -439,6 +516,7 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 	// Create a map to associate trackIndex with trackID
 	map<int, int> trackIDToNumberMap;
 
+	// run over the tracks for one event
 	for (int trackIndex=0; trackIndex<event->GetNumberOfTracks(); trackIndex++) 
 	  // for (int trackIndex=0; trackIndex<5; trackIndex++)
 	  {
@@ -448,12 +526,14 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 
 	    // key trackID, value trackIndex
 	    trackIDToNumberMap[aTrack.GetTrackID()] = trackIndex;
-      
+
+	    // run over the hits for one track
 	    for (int hitIndex=0; hitIndex<aTrack.GetNumberOfHits(); hitIndex++)
 	      {
 
 		TString hitVolume = geant4Metadata->GetGeant4GeometryInfo().GetVolumeFromID(aHitCollection.GetHitVolume(hitIndex));
 
+		// Filling histogram for depth (and energy) of each hit
 		h2_DepthEnergy->Fill(aHitCollection.GetZ(hitIndex), aHitCollection.GetEnergy(hitIndex) / 1.e3);
 		h2_Depth->Fill(event->GetTrack(trackIndex).GetHits().GetX(hitIndex), event->GetTrack(trackIndex).GetHits().GetZ(hitIndex));
 		
@@ -464,14 +544,16 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 		  {
 
 		    BWaterSensitiveTransportationMultiplicity++;
-		    
+
+		    // store the hits (and corresponding track) for which we have a transportation process
 		    aSensitiveTrackHitCollection.push_back({trackIndex, hitIndex});
+
 	      
 		  } // end if condition on transportation BWater -> Sensitive
 
-	      }
+	      } // end of for loop on hits
 
-	  }
+	  } // end of for loop on tracks
 	
 	vector<vector<int>> trackHitVector;
 
@@ -487,13 +569,17 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 	else
 	  {
 	    
-	    // check is the tracks reaching the sensitive volume are related or not
-	    
+	    // check if the tracks reaching the sensitive volume are related or not
+	    // if the tracks are parent/children, the children track will be erased from the list (the trackHitVector will be updated) 
 	    checkTrackRelation(aSensitiveTrackHitCollection, *event, trackIDToNumberMap, trackHitVector);
 
+	    // store the corresponding multiplicity
+	    // now trackHitVector only contains not related tracks (no lineage) 
 	    BWaterSensitiveTransportationMultiplicity = trackHitVector.size();
 	    
-	  } // end of if condition if more than one hit
+	  } // end of else if condition if more than one hit
+
+	// cout << "with multiplicity " << BWaterSensitiveTransportationMultiplicity << endl;
 	
 	h_multiplicity->Fill(BWaterSensitiveTransportationMultiplicity);
 	
@@ -501,8 +587,10 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 	  {
 	    // a deplacer pcq le vecteur trackHitVector depend aussi de la multiplicite
 	    // probablement mettre un bool dans la boucle sur les track/hit avec transportation, et quand true, counter_selected++
-	    // ou alors juste ava,t cette boucle, mettre un if multiplicity > 0, counter_selected++
+	    // ou alors juste avant cette boucle, mettre un if multiplicity > 0, counter_selected++
 	    counter_selected++;
+	    
+	    // cout << "event " << i << " selected." << endl;
 	    
 	  }
 	
@@ -510,8 +598,21 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 	
 	// cout << "event " << i << endl;
 
+	////////////////////
+	// ce bloc etait avant dans la boucle for (int i = 0; i < trackHitVector.size(); ++i). bouge le 22/09
+	// 22/09: reprise des simus. du coup je suis duper donc peut etre que le commentaire qui suit n'a aucun sens
+	// verifier que ces histos doivent bien etre fill ici, puisque la on est en train de tourner sur le trackHitVector, donc ils vont etre remplis plusieurs fois si on remplis les histos dans cette boucle non?
+	  
+	// Fill 1D histogram to store energy deposited in Sensitive
+	h0->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+
+	// Fill 1D histogram to store energy deposited in BWater
+	h1->Fill(event->GetEnergyDepositedInVolume(ActiveVolumeID) / 1000.);
+	////////////////////
+	
 	// dans cette loop on ne va tourner que sur les ev qui ont depose de l'energie dans le Sensitive
 	for (int i = 0; i < trackHitVector.size(); ++i) {
+	  
 	  int trackNumber = trackHitVector[i][0];
 	  int hitNumber = trackHitVector[i][1];
 	  
@@ -541,21 +642,24 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 	  // tous les ev devraient etre sur linterface BWater/scintillateur
 	  // h2_DepthEnergyFirstHit->Fill(event->GetTrack(trackNumber).GetHits().GetZ(hitNumber), event->GetTrack(trackNumber).GetHits().GetEnergy(hitNumber) / 1.e3);
 	  // h2_DepthFirstHit->Fill(event->GetTrack(trackNumber).GetHits().GetX(hitNumber), event->GetTrack(trackNumber).GetHits().GetZ(hitNumber));
-	  
-	  // Fill 1D histogram to store energy deposited in Sensitive
-	  h0->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
 
-	  // Fill 1D histogram to store energy deposited in BWater
-	  h1->Fill(event->GetEnergyDepositedInVolume(ActiveVolumeID)/1000.);
 
 	  // Selection on particle type
 
-	  // Select events were the primary neutron deposits energy directly in the Sensitive volume:
+	  // same comment as before here. The histograms are not going to be filled several times if the size of the trackHitVector is > 1?
+	  // et alors surtout j'ai l'impression que la variable qui est fill dans l'histo n'est pas la bonne...
+	  // comme la multiplicite peut etre superieure a 1, les differents tracks qui traversent l'interface vont se partager 
+	  
+	  // Select events were the primary generated particle deposits energy directly in the Sensitive volume:
 	  if (event->GetTrack(trackNumber).GetParentID() == 0)
 	    {
 	      counter_generator++;
 	      IsGenerator = true;
-	      h_generator->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+	      // h_generator->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+	      h_generator->Fill(event->GetTrack(trackNumber).GetEnergyInVolume("Sensitive",true) / 1000.);
+
+	      // cout << event->GetTrack(trackNumber).GetEnergyInVolume("Sensitive",true) / 1000. << endl;
+	      // cout << event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000. << endl;
 	      
 	      // cout << "generator particle" << endl;
 	    }
@@ -568,8 +672,10 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 		{
 		  counter_neutrons++;
 		  IsNeutron = true;
-		  h_neutrons->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
-	  
+		  // commente le 22/09/23 car effectivement je ne crois pas qu'il faille aller chercher dans TRestGeant4Event, mais dans TRestGeant4Track
+		  // h_neutrons->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+		  h_neutrons->Fill(event->GetTrack(trackNumber).GetEnergyInVolume("Sensitive",true) / 1000.);
+		  
 		  // cout << "particle " << event->GetTrack(trackNumber).GetParticleName() << endl;
 		}
 		    
@@ -578,65 +684,107 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 		{
 		  counter_gammas++;
 		  IsGamma = true;
-		  h_gammas->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+		  // h_gammas->Fill(event->GetEnergyDepositedInVolume(SensitiveVolumeID) / 1000.);
+		  h_gammas->Fill(event->GetTrack(trackNumber).GetEnergyInVolume("Sensitive", true) / 1000.);
 
 		  // cout << "particle " << event->GetTrack(trackNumber).GetParticleName() << endl;
 		}
 			    
 	    } // end if condition on selection on particle type
 
-	  
-	}
-
+	} // end on for loop on trackHitVector
 	
       } // end if condition on EventSelection
 
       else if (isnan(event->GetFirstPositionInVolume(ActiveVolumeID).X()) && isnan(event->GetFirstPositionInVolume(SensitiveVolumeID).X())) {
+
 	// Increment counter for events not depositing energy in any active volume 
 	++counter;
-      }
+
+      } 
 
     } // end for loop on events
 
-  cout << "\n\nevents interacting before the BWater volume " << counter << " on total events " << Total_number_ev_loop << endl;
+  /////////////////commente le 25/09, a remetre////////////////////////
+  // cout << "\n\nevents interacting before the BWater volume " << counter << " on total events " << Total_number_ev_loop << endl;
 
-  // Correcting the total number of events from events not depositing energy in any volume
-  Total_number_ev_loop -= counter;
-  cout << "new total events " << Total_number_ev_loop << endl;
-  cout << "total selection " << ((double)counter_selected/Total_number_ev_loop)*100 << "%" << "\n\n";
+  // Correcting the total number of events from events not depositing energy in any volume (events interacting before the BWater volume)
+  // Total_number_ev_loop -= counter;
+  // cout << "new total events " << Total_number_ev_loop << endl;
+  // cout << "total selection " << ((double)counter_selected/Total_number_ev_loop)*100 << "%" << "\n\n";
+  ////////////////////////////////////////////////////////////////////
   
-  // Calculate selection rate and mean total energy
-  Attenuation = 1-((double) counter_selected / Total_number_ev_loop);
-  AttenuationNeutron = 1-((double) (counter_neutrons + counter_generator) / Total_number_ev_loop);
-  AttenuationGenerator = 1-((double) (counter_generator) / Total_number_ev_loop);
-	  
-  const double Var_Attenuation = sqrt(Attenuation * (1 - Attenuation) / Total_number_ev_loop); 
+  // Calculate selection rates (and mean total energy?) + corresponding std deviations
 
+  // for all particles
+  Attenuation = 1-((double) counter_selected / Total_number_ev_loop);
+  StdAttenuation = sqrt(Attenuation * (1 - Attenuation) / Total_number_ev_loop); 
+
+  // for neutrons
+  // hmm looks like here it would work only if the generator is a neutron.. to be checked
+  // so try modification on 25/09/23. The old version was just AttenuationNeutron = 1-((double) (counter_neutrons + counter_generator) / Total_number_ev_loop);
+  if (partType == "neutron")
+    AttenuationNeutron = 1-((double) (counter_neutrons + counter_generator) / Total_number_ev_loop); 
+  else
+    AttenuationNeutron = 1-((double) (counter_neutrons) / Total_number_ev_loop);
+
+  // question: are we sure it is the good way to represent the errors?
+  // maybe I should express it like that: (see note book 26/09/23)
+  // StdAttenuationNeutron = sqrt(AttenuationNeutron * (1 - AttenuationNeutron) / Total_number_ev_loop) / Total_number_ev_loop; 
+  // double test_ratio = (double) (counter_neutrons + counter_generator) / Total_number_ev_loop ;
+  // StdAttenuationNeutron = sqrt(test_ratio * (1 - test_ratio) / Total_number_ev_loop) / Total_number_ev_loop;
+  StdAttenuationNeutron = calculateStandardDeviation(counter_neutrons + counter_generator, Total_number_ev_loop);
+  // StdAttenuationNeutron = sqrt(test_ratio * (1 - test_ratio) / Total_number_ev_loop) ; 
+  // original version:
+  // StdAttenuationNeutron = sqrt(AttenuationNeutron * (1 - AttenuationNeutron) / Total_number_ev_loop); 
+
+  // for gammas
+  if (partType == "gamma")
+    AttenuationGamma = 1-((double) (counter_gammas + counter_generator) / Total_number_ev_loop); 
+  else
+    AttenuationGamma = 1-((double) (counter_gammas) / Total_number_ev_loop);
+
+  StdAttenuationGamma = sqrt(AttenuationGamma * (1 - AttenuationGamma) / Total_number_ev_loop); 
+
+  // for the generator particle (will calculate the generator particles that survive and interact in the Sensitive volume directly)
+  AttenuationGenerator = 1-((double) (counter_generator) / Total_number_ev_loop);
+
+  StdAttenuationGenerator = sqrt(AttenuationGenerator * (1 - AttenuationGenerator) / Total_number_ev_loop);
+  
   // Save attenuation all types of particle vs. borated water layer thickness to file
   Thickness_vs_AttenuationAllPart->open("TxtFiles_Thickness_vs_AttenuationAllPart/Thickness_vs_AttenuationAllPart.txt", ofstream::app);
   if (!Thickness_vs_AttenuationAllPart->is_open()) {
     cerr << "File Thickness_vs_AttenuationAllPart did not open!\n";
     return 6;
   }
-  *Thickness_vs_AttenuationAllPart << BWaterThickness << " " << Attenuation << " " << Var_Attenuation << "\n";
+  *Thickness_vs_AttenuationAllPart << BWaterThickness << " " << Attenuation << " " << StdAttenuation << "\n";
   Thickness_vs_AttenuationAllPart->close();
 
   // Save attenuation vs. borated water layer thickness to file
-  Thickness_vs_Attenuation->open("TxtFiles_Thickness_vs_Attenuation/Thickness_vs_Attenuation.txt", ofstream::app);
-  if (!Thickness_vs_Attenuation->is_open()) {
-    cerr << "File Thickness_vs_Attenuation did not open!\n";
+  Thickness_vs_AttenuationNeutron->open("TxtFiles_Thickness_vs_AttenuationNeutron/Thickness_vs_AttenuationNeutron.txt", ofstream::app);
+  if (!Thickness_vs_AttenuationNeutron->is_open()) {
+    cerr << "File Thickness_vs_AttenuationNeutron did not open!\n";
     return 6;
   }
-  *Thickness_vs_Attenuation << BWaterThickness << " " << AttenuationNeutron << " " << "\n";
-  Thickness_vs_Attenuation->close();
+  *Thickness_vs_AttenuationNeutron << BWaterThickness << " " << AttenuationNeutron << " " << StdAttenuationNeutron  << " " << "\n"; // same comment here, AttenuationNeutron looks like miscalculated
+  Thickness_vs_AttenuationNeutron->close();
 
-  // Save neutron generator attenuation rate vs. borated water layer thickness to file
+  // Save attenuation vs. borated water layer thickness to file
+  Thickness_vs_AttenuationGamma->open("TxtFiles_Thickness_vs_AttenuationGamma/Thickness_vs_AttenuationGamma.txt", ofstream::app);
+  if (!Thickness_vs_AttenuationGamma->is_open()) {
+    cerr << "File Thickness_vs_AttenuationGamma did not open!\n";
+    return 6;
+  }
+  *Thickness_vs_AttenuationGamma << BWaterThickness << " " << AttenuationGamma << " " << StdAttenuationGamma  << " " << "\n"; // same comment here, AttenuationGamma looks like miscalculated
+  Thickness_vs_AttenuationGamma->close();
+
+  // Save generator attenuation rate vs. borated water layer thickness to file
   Thickness_vs_AttenuationGenerator->open("TxtFiles_Thickness_vs_AttenuationGenerator/Thickness_vs_AttenuationGenerator.txt", ofstream::app);
   if (!Thickness_vs_AttenuationGenerator->is_open()) {
     cerr << "File Thickness_vs_AttenuationGenerator did not open!\n";
     return 6;
   }
-  *Thickness_vs_AttenuationGenerator << BWaterThickness << " " << AttenuationGenerator << " " << "\n";
+  *Thickness_vs_AttenuationGenerator << BWaterThickness << " " << AttenuationGenerator << " " << StdAttenuationGenerator  << " " << "\n";
   Thickness_vs_AttenuationGenerator->close();
 
   // Generate output file names and save histograms

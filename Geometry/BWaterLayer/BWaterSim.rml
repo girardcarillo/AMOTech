@@ -18,15 +18,15 @@
     
     <parameter name="gdmlFile" value="Setup.gdml"/>
     <parameter name="subEventTimeDelay" value="100us"/>
-    <parameter name="nRequestedEntries" value="10000"/>
+    <parameter name="nRequestedEntries" value="10"/>
     <parameter name="seed" value="12345"/>
     <parameter name="saveAllEvents" value="true"/> <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!1true-->
     <parameter name="printProgress" value="true"/>
     
-    <generator type="point" position="(0,0,3.5)" units="m" >
+    <generator type="point" position="(0,0,4.5)" units="m" >
       <source particle="neutron" fullChain="off">
         <!-- <energy type="flat" range="(1,20)" units="MeV" /> -->
-        <energy type="mono" energy="20" units="MeV" />
+        <energy type="mono" energy="100" units="MeV" />
 	<angular type="flux" direction="(0,0,-1)" />
 	<!-- <angular type="formula" name="Cos2" direction="(0,0,-1)" range="(10,40)deg" /> <!-\-\-\-> -->
       </source>
@@ -63,6 +63,8 @@
       <!-- <volume name="Sensitive" sensitive="true" kill="true" maxStepSize="1mm"/> -->
       <volume name="Sensitive" sensitive="true" maxStepSize="1mm"/>
       <volume name="BWater" maxStepSize="1mm"/>
+      <volume name="Concrete" maxStepSize="1mm"/>
+      <volume name="Iron" maxStepSize="1mm"/>
       <!-- <volume name="lsAMT" maxStepSize="1mm"/> -->
       <!-- <volume name="pmt" maxStepSize="1mm"/> -->
       <!-- <volume name="fiberCore" maxStepSize="1mm"/> -->
@@ -73,6 +75,8 @@
     <storage sensitiveVolume="Sensitive">
       <activeVolume name="Sensitive" chance="1"/>
       <activeVolume name="BWater" chance="1"/>
+      <activeVolume name="Concrete" chance="1"/>
+      <activeVolume name="Iron" chance="1"/>
       <!-- <activeVolume name="pmt" chance="1"/> -->
       <!-- <activeVolume name="fiberCore" chance="1"/> -->
       <!-- <activeVolume name="fiberCladding" chance="1"/> -->

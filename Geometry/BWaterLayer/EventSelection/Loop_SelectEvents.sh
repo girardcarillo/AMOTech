@@ -42,15 +42,26 @@ Execute_RootMacro(){
     # SelectEvents(string SelectedVolumes, int BWaterThickness, double energy, string partType, bool WaterOnly = 0, bool thermal = 0, double DetectionThreshold = 0.) {
     restRoot -l  <<EOC
 .L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
-for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron");}
-for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",1);}
-for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron");}
-for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron",1);}
+for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron",1,0,1,1);}
+for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1,0,1,1);}
 .q
 EOC
 
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"1","neutron",0,0,1);}
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"1","neutron",1,0,1);}
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",0,0,1);}
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1,0,1);}
     
-    
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",0,1);}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",1,1);}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"100","neutron");}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"100","neutron",1);}
+
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron");}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"1","neutron",1);}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron");}
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"20","neutron",1);}
+
     # Print a blank line for formatting
     echo
 

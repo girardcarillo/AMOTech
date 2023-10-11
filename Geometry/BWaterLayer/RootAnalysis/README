@@ -1,0 +1,3 @@
+- The file RootDrawEnergyDistributions.cc draws energy distributions by giving run parameters and created a pdf file
+- The file RootDrawInteractionDepth.cc will drw 2D histigrams containing information on the depth of the particle interactions (neutrons or gammas). Depending on the option selected for whichPlot, you will have infos for the first hit or the energy deposited
+  - the files Loop_* will loop on this macro for neutrons (enter energy as a parameter when you execute) or gammas (no need to enter energy)
