@@ -1,6 +1,6 @@
 void PlotAttenuationThicknessGamma(bool RealFlux = 0){//const std::string& fName
 
-  double NeutronGammaBq_Tl = 2e3/1e3;
+  double NeutronGammaBq_Tl = 4.25e5/1e3; // with 25 Bq/kg, normalized to have kHz
     
   string path_to_filesAttenuation = "../EventSelection/TxtFiles_Thickness_vs_AttenuationGenerator/Gamma/" ;
   
@@ -54,13 +54,13 @@ void PlotAttenuationThicknessGamma(bool RealFlux = 0){//const std::string& fName
   grParticle0->SetTitle("");
   grParticle0->GetXaxis()->SetTitle("Thickness (mm)");
 
-  grParticle0->SetLineColor(kOrange-3);
+  grParticle0->SetLineColor(kCyan+1);
   grParticle0->SetLineWidth(1);
   grParticle0->SetLineStyle(1);
   grParticle0->SetMarkerStyle(20);
   grParticle0->SetMarkerSize(2);
   grParticle0->SetMarkerColor(grParticle0->GetLineColor());
- 
+
   if (RealFlux){
 
     // double LowerLimitX = 70.;
@@ -77,6 +77,8 @@ void PlotAttenuationThicknessGamma(bool RealFlux = 0){//const std::string& fName
     grParticle0->GetYaxis()->SetTitle("# survival particles (kHz)");
 
     grParticle0->Scale(NeutronGammaBq_Tl,"y");
+
+    grParticle0->GetYaxis()->SetRangeUser(0,500);
     
     grParticle0->Draw("ALP");
 
@@ -99,7 +101,7 @@ void PlotAttenuationThicknessGamma(bool RealFlux = 0){//const std::string& fName
   
     grParticle0->Draw("ALP");
   
-    grParticle1->SetLineColor(kAzure+5);
+    grParticle1->SetLineColor(kCyan+3);
     grParticle1->SetLineWidth(grParticle0->GetLineWidth());
     grParticle1->SetLineStyle(grParticle0->GetLineStyle());
     grParticle1->SetMarkerStyle(23);
@@ -110,8 +112,9 @@ void PlotAttenuationThicknessGamma(bool RealFlux = 0){//const std::string& fName
   }
 
   TLegend *legend = new TLegend(0.784929, 0.800447, 0.890502, 0.881608); // linear scale
-  legend->AddEntry(grParticle0, "2.6 MeV", "l");
-  legend->AddEntry(grParticle1, "7.6 MeV", "l");
+  legend->AddEntry(grParticle0, "2.6 MeV", "lp");
+  if(!RealFlux)
+    legend->AddEntry(grParticle1, "7.6 MeV", "lp");
   
   legend->SetBorderSize(1);
   legend->SetLineColor(kBlack);
