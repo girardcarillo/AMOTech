@@ -173,7 +173,7 @@ if (Concrete) {
     }
 
     // Scaling with the flux in seconds
-
+    
     grParticle0->Scale(NeutronFluxSec_1MeV,"y");
     grParticle1->Scale(NeutronFluxSec_20MeV,"y");
     grParticle2->Scale(NeutronFluxSec_100MeV,"y");
@@ -313,7 +313,7 @@ if (Concrete) {
     
   // limits for y axis in %
   if (RealFlux) {
-    LowerLimitY = 1e-6;
+    LowerLimitY = 6e-4;
     UpperLimitY = 3;
     // LowerLimitY = -0.1;
     // UpperLimitY = 1.3;
@@ -322,7 +322,7 @@ if (Concrete) {
   // limits for y axis in 0-1 values
   else {
     LowerLimitY = -10.;
-    UpperLimitY = 130.;
+    UpperLimitY = 115.;
   }
   
   grParticle0->GetYaxis()->SetRangeUser(LowerLimitY,UpperLimitY);
@@ -370,8 +370,7 @@ if (Concrete) {
   grParticleWaterOnly1->SetLineStyle(grParticleWaterOnly0->GetLineStyle());
   grParticleWaterOnly1->SetMarkerSize(grParticle0->GetMarkerSize());
   grParticleWaterOnly1->SetMarkerColor(grParticle1->GetMarkerColor());
-  // grParticleWaterOnly1->Draw("SAMELP");
-  grParticleWaterOnly1->Draw("ALP");
+  grParticleWaterOnly1->Draw("SAMELP");
   
   grParticleWaterOnly2->SetLineColor(grParticle2->GetLineColor());
   grParticleWaterOnly2->SetLineWidth(grParticleWaterOnly0->GetLineWidth());

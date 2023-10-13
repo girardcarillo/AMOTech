@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE gdml [
+<!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/materials.xml">
+<!ENTITY MyMaterials SYSTEM "../../../Materials/MyMaterials.rml">
+]>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+  <!-- Numerical definitions -->
+
+  <define>
+    <variable name="world_size" unit="mm" value="10000" />
+    
+    <!-- Constants -->
+
+    <!-- Constants from design input -->
+    
+    <!-- Main Vessel dimensions -->
+    
+    <!-- Armor dimensions -->
+    <constant name="ConcreteThickness" unit="mm" value="800.0"/> 
+    <constant name="BWaterThickness" unit="mm" value="400.0"/> 
+    <constant name="ArmorThickness" unit="mm" value="500.0"/> 
+    <constant name="SensitiveThickness" unit="mm" value="5000.0"/>
+    <constant name="XYLength" unit="mm" value="3000.0"/> 
+    
+    <!-- Rotations -->
+    <rotation unit="degree" name="HorizontalRotation" x="0" y="0" z="90"/>
+    
+  </define>
+
+  &materials;
+  
+  &MyMaterials;
+
+  <solids>
+
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+
+    <box name="ConcreteSolid" x="XYLength" y="XYLength" z="ConcreteThickness" lunit="mm" />
+    <box name="BWaterSolid" x="XYLength" y="XYLength" z="BWaterThickness" lunit="mm" />
+    <box name="ArmorSolid" x="XYLength" y="XYLength" z="ArmorThickness" lunit="mm" />
+    <box name="SensitiveSolid"  x="XYLength" y="XYLength" z="SensitiveThickness" lunit="mm" />
+    
+  </solids>
+  
+  <structure>
+
+    <volume name="ConcreteVolume">
+      <solidref ref="ConcreteSolid"/>
+      <materialref ref="G4_CONCRETE"/>
+    </volume>
+
+    <volume name="BWaterVolume">
+      <solidref ref="BWaterSolid"/>
+      <!-- <materialref ref="MY_BORATED_WATER"/> -->
+      <materialref ref="G4_WATER"/>
+    </volume>
+
+    <volume name="ArmorVolume">
+      <solidref ref="ArmorSolid"/>
+      <materialref ref="MY_LAB"/>
+    </volume>
+
+    <volume name="SensitiveVolume">
+      <materialref ref="MY_LAB"/>
+      <solidref ref="SensitiveSolid"/>
+    </volume>
+    
+    <volume name="World">
+      <materialref ref="G4_AIR"/>
+      <solidref ref="WorldSolid"/>
+
+      <!-- concrete layer on top of the borated water -->
+      <physvol name="Concrete">
+	<volumeref ref="ConcreteVolume"/>
+	<rotationref ref="HorizontalRotation" />
+	<position name="ConcretePosition" unit="mm" x="0" y="0" z="SensitiveThickness/2+ArmorThickness+BWaterThickness+ConcreteThickness/2"/>
+      </physvol>
+
+      <physvol name="BWater">
+	<volumeref ref="BWaterVolume"/>
+	<rotationref ref="HorizontalRotation" />
+	<position name="BWaterPosition" unit="mm" x="0" y="0" z="SensitiveThickness/2+ArmorThickness+BWaterThickness/2"/>
+      </physvol>
+
+      <physvol name="Armor">
+	<volumeref ref="ArmorVolume"/>
+	<rotationref ref="HorizontalRotation" />
+	<position name="ArmorPosition" unit="mm" x="0" y="0" z="SensitiveThickness/2+ArmorThickness/2"/>
+      </physvol>
+      
+      <physvol name="Sensitive">
+	<volumeref ref="SensitiveVolume"/>
+	<rotationref ref="HorizontalRotation" />
+      </physvol>
+       
+    </volume>
+
+  </structure>
+  
+  <setup name="Default" version="1.0">
+    <world ref="World"/>
+  </setup>
+
+</gdml>
+
+

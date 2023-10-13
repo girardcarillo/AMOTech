@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE gdml [
+<!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/materials.xml">
+<!ENTITY MyMaterials SYSTEM "../../../Materials/MyMaterials.rml">
+]>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+  <!-- Numerical definitions -->
+
+  <define>
+    <variable name="world_size" unit="mm" value="10000" />
+    
+    <!-- Constants -->
+
+    <!-- Constants from design input -->
+    
+    <!-- Main Vessel dimensions -->
+    
+    <!-- Armor dimensions -->
+    <constant name="ArmorThickness" unit="mm" value="500.0"/> 
+    <constant name="SensitiveThickness" unit="mm" value="7000.0"/>
+    <constant name="XYLength" unit="mm" value="3000.0"/> 
+    
+    <!-- Rotations -->
+    <rotation unit="degree" name="HorizontalRotation" x="0" y="0" z="90"/>
+    
+  </define>
+
+  &materials;
+  
+  &MyMaterials;
+
+  <solids>
+
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+
+    <box name="ArmorSolid" x="XYLength" y="XYLength" z="ArmorThickness" lunit="mm" />
+    <box name="SensitiveSolid"  x="XYLength+2000" y="XYLength+2000" z="SensitiveThickness" lunit="mm" />
+    
+  </solids>
+  
+  <structure>
+
+    <volume name="ArmorVolume">
+      <solidref ref="ArmorSolid"/>
+      <materialref ref="MY_LAB"/>
+    </volume>
+
+    <volume name="SensitiveVolume">
+      <materialref ref="MY_LAB"/>
+      <solidref ref="SensitiveSolid"/>
+    </volume>
+    
+    <volume name="World">
+      <materialref ref="G4_AIR"/>
+      <solidref ref="WorldSolid"/>
+
+      <physvol name="Armor">
+	<volumeref ref="ArmorVolume"/>
+	<rotationref ref="HorizontalRotation" />
+	<position name="ArmorPosition" unit="mm" x="0" y="0" z="SensitiveThickness/2+ArmorThickness/2"/>
+      </physvol>
+      
+      <physvol name="Sensitive">
+	<volumeref ref="SensitiveVolume"/>
+	<rotationref ref="HorizontalRotation" />
+      </physvol>
+       
+    </volume>
+
+  </structure>
+  
+  <setup name="Default" version="1.0">
+    <world ref="World"/>
+  </setup>
+
+</gdml>
+
+

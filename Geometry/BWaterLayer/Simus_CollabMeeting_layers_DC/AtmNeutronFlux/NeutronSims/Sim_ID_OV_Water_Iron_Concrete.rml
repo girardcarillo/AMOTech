@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<restG4>  
+  <!-- Parameters for the Run section -->
+  <TRestRun name="TestRun" title="Shielding study">
+    <parameter name="experimentName" value="Shielding"/>
+    <parameter name="readOnly" value="false"/>
+    <parameter name="runNumber" value="auto"/>
+    <parameter name="runDescription" value=""/>
+    <parameter name="user" value="${USER}"/>
+    <parameter name="verboseLevel" value="info"/>
+    <parameter name="overwrite" value="off"/>
+    <parameter name="outputFileName" value="/AGWeber/girardcarillo/[fRunTag]_ID_OV_Water_Iron_Concrete.root"/>
+    <!-- <parameter name="outputFileName" value="[fRunTag]_[fRunNumber].root"/> -->
+  </TRestRun>
+  
+  <!-- TRestGeant4 Metadata -->
+  <TRestGeant4Metadata name="restG4 run" title="ShieldingSimus">
+    
+    <parameter name="gdmlFile" value="Setup_ID_OV_Water_Iron_Concrete.gdml"/>
+    <parameter name="subEventTimeDelay" value="100us"/>
+    <parameter name="nRequestedEntries" value="100000"/>
+    <parameter name="seed" value="12345"/>
+    <parameter name="saveAllEvents" value="true"/> <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!1true-->
+    <parameter name="printProgress" value="true"/>
+    
+    <generator type="point" position="(0,0,6)" units="m" >
+      <source particle="neutron" fullChain="off">
+	<energy type="TH1D" file="ParticleFlux/Gordon_NeutronFlux.root" name="Neutron_flux"/>
+	<angular type="flux" direction="(0,0,-1)" />
+      </source>
+    </generator>
+    
+    <detector>
+      <parameter name="activateAllVolumes" value="false"/>
+      <!-- <volume name="Sensitive" sensitive="true" kill="true" maxStepSize="1mm"/> -->
+      <volume name="Sensitive" sensitive="true" maxStepSize="1mm"/>
+      <volume name="Armor" maxStepSize="1mm"/>
+    </detector>
+    
+    <storage sensitiveVolume="Sensitive">
+      <activeVolume name="Sensitive" chance="1"/>
+      <activeVolume name="Armor" chance="1"/>
+    </storage>
+    
+  </TRestGeant4Metadata>
+
+  <!-- Physics List -->
+
+  <TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning">
+    <parameter name="cutForGamma" value="1" units="um"/>
+    <parameter name="cutForElectron" value="1" units="um"/>
+    <parameter name="cutForPositron" value="1" units="um"/>
+
+    <parameter name="cutForMuon" value="1" units="mm"/>
+    <parameter name="cutForNeutron" value="1" units="mm"/>
+    <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+    <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+    
+    <!-- EM Physics lists -->
+    <physicsList name="G4EmLivermorePhysics"/>
+    <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
+    <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+
+    <!-- Decay physics lists -->
+    <physicsList name="G4DecayPhysics"/>
+    <physicsList name="G4RadioactiveDecayPhysics"/>
+    <physicsList name="G4RadioactiveDecay">
+      <option name="ICM" value="true"/>
+      <option name="ARM" value="true"/>
+    </physicsList>
+
+    <!-- <!-\- Hadron physics lists -\-> -->
+    <physicsList name="G4HadronElasticPhysicsHP"/>
+    <physicsList name="G4IonBinaryCascadePhysics"/>
+    <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+    <physicsList name="G4EmExtraPhysics"/>
+    
+  </TRestGeant4PhysicsLists>
+
+  <!--  -->
+ 
+  <!-- <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/> -->
+  
+  <!-- Final Tag -->
+</restG4>

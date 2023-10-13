@@ -201,7 +201,8 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
 
   // Define the input file name
   // const TString& fName = "/uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/RootOutputFiles/BWaterSimus_" + to_string(BWaterThickness) + "mm_" + to_string(energy) + "MeV.root"; //_testNotKill
-
+  // const TString& fName = "../BWaterSimus_00625_Water_Concrete_IronTop.root";
+  
   string fName = "/AGWeber/girardcarillo/" + partType + "/";
   
   if (!thermal)
@@ -431,8 +432,8 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
   bool IsNeutron = false;
   bool IsGamma = false;
 
-  // int Total_number_ev_loop = 100; // for tests
-  int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
+  int Total_number_ev_loop = 10000; // for tests
+  // int Total_number_ev_loop = run->GetEntries(); // total number of events in the run
 
   // Loop over simulated events
   for (size_t i = 0; i < Total_number_ev_loop; i++)
@@ -468,7 +469,7 @@ void SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, st
       
       // Select events that deposited energy either in ID or in OD
       else if (SelectedVolumes == "or")
-	EventSelection = checkDetectionThreshold && (!isnan(event->GetFirstPositionInVolume(ActiveVolumeID).X()) || !isnan(event->GetFirstPositionInVolume(SensitiveVolumeID).X()));
+	EventSelection = checkDetectionThreshold; // && (!isnan(event->GetFirstPositionInVolume(ActiveVolumeID).X()) || !isnan(event->GetFirstPositionInVolume(SensitiveVolumeID).X())); // commented on 11/10/2023 because probably bug when adding other layers (concrete...)
       
       // Select events that deposited energy both in ID and in OD, with energy above the DetectionThreshold, or select events that deposited energy only in ID with energy above the DetectionThreshold
       else if (SelectedVolumes == "and")

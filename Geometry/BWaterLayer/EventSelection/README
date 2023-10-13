@@ -1,3 +1,8 @@
+11/10/2023
+SelectEvent_fancy.cc corresponds to the complex algorithm created in order to select what particles interact in the sensitive volume.
+But there is probably a bug in there, of course discovered just before the collab meeting
+So for the moment I'm going back to a less fancy stuff, where the particles are killed when entering the sensitive volume 
+
 The diff between SelectEvents.cc and SelectEvents_bkp.cc is that I removed the super complicated stuff I was doing to select the particle type.
 I found a new way of doing it, which is in SelectOneEvent, and transposed in SelectEvents.cc
 

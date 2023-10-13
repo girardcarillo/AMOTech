@@ -27,13 +27,32 @@
   </material>
   
   <!-- Borated water  -->
+  <!-- to be redefined as composite material -->
   <material name="MY_BORATED_WATER" state="liquid">
-    <D unit="g/cm3" value="1.0"/>
+    <D unit="g/cm3" value="1.0"/> <!-- to be replaced by 1.0324 -->
     <fraction n="0.03" ref="B"/> <!--3% B-->
     <fraction n="0.11089400" ref="H"/>
     <fraction n="0.85910600" ref="O"/>
   </material>
   
+  <!-- Enriched Concrete  -->
+  <material name="MY_BORATED_CONCRETE" state="solid">
+    <D unit="g/cm3" value="2.278"/>
+    <fraction n="0.10" ref="B"/>
+    <fraction n="0.90" ref="G4_CONCRETE"/>
+  </material>
+  
+  <!-- <fraction n="0.01" ref="H"/> -->
+  <!-- <fraction n="0.001" ref="C"/> -->
+  <!-- <fraction n="0.529107" ref="O"/> -->
+  <!-- <fraction n="0.016" ref="Na"/> -->
+  <!-- <fraction n="0.002" ref="Mg"/> -->
+  <!-- <fraction n="0.033872" ref="Al"/> -->
+  <!-- <fraction n="0.337021" ref="Si"/> -->
+  <!-- <fraction n="0.013" ref="K"/> -->
+  <!-- <fraction n="0.044" ref="Ca"/> -->
+  <!-- <fraction n="0.014" ref="Fe"/> -->
+
   <!-- <!-\- Tests PVC  -\-> -->
   <!-- <material name="MY_PVC" state="solid"> -->
   <!--   <D unit="g/cm3" value="1.3"/> -->

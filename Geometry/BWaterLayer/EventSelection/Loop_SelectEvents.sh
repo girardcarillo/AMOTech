@@ -39,14 +39,58 @@ Execute_RootMacro(){
     echo
 
     # Execute the root macro using restRoot
-    # SelectEvents(string SelectedVolumes, int BWaterThickness, double energy, string partType, bool WaterOnly = 0, bool thermal = 0, double DetectionThreshold = 0.) {
+    # SelectEvents(string SelectedVolumes, int BWaterThickness, string energy, string partType, bool WaterOnly = 0, bool thermal = 0, bool Concrete = 0, bool Iron = 0, double DetectionThreshold = 0.)
+
+    ######## for neutron simus with Concrete borated water
     restRoot -l  <<EOC
 .L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron",1,0,1,1);}
-for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1,0,1,1);}
+for (int i=100;i<600;i+=400){SelectEvents("or",i,"1","neutron",1,0,1);}
 .q
 EOC
 
+    source mvTxtFilesNeutronWaterOnlyConcrete.sh 1
+
+    restRoot -l  <<EOC
+.L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
+for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron",1,0,1);}
+.q
+EOC
+
+    source mvTxtFilesNeutronWaterOnlyConcrete.sh 20
+
+    restRoot -l  <<EOC
+.L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
+for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1,0,1);}
+.q
+EOC
+
+    source mvTxtFilesNeutronWaterOnlyConcrete.sh 100
+
+    ###############
+
+
+    #     ######### for neutron simus with Concrete and Iron
+    #     restRoot -l  <<EOC
+    # .L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"20","neutron",1,0,1,1);}
+    # .q
+    # EOC
+
+    #     source mvTxtFilesNeutronConcreteIron.sh 20
+
+    #     restRoot -l  <<EOC
+    # .L /uni-mainz.de/homes/cgirardc/Workdir/nuCLOUD-REST-Simulations/Geometry/BWaterLayer/EventSelection/SelectEvents.cc
+    # for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",1,0,1,1);}
+    # .q
+    # EOC
+
+    #     source mvTxtFilesNeutronConcreteIron.sh 100
+
+    #     ###############
+
+    
+    # for (int i=100;i<600;i+=100){SelectEvents("or",i,"2.6","gamma",1);}
+    
     # for (int i=100;i<600;i+=400){SelectEvents("or",i,"1","neutron",0,0,1);}
     # for (int i=100;i<600;i+=400){SelectEvents("or",i,"1","neutron",1,0,1);}
     # for (int i=100;i<600;i+=400){SelectEvents("or",i,"100","neutron",0,0,1);}
